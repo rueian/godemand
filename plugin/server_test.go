@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"net/rpc"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -16,7 +18,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/plugin/mock"
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
 var _ = Describe("Server", func() {
@@ -150,30 +151,31 @@ var _ = Describe("Serve", func() {
 		cancel()
 	})
 
-	Context("without port", func() {
-		BeforeEach(func() {
-			os.Setenv(TCPPortEnvName, "")
-		})
-
-		It("fail to start server", func() {
-			Expect(xerrors.Is(<-doneCh, TCPPortNotIntegerErr)).To(BeTrue())
-		})
+	It("start server", func() {
+		cancel()
+		Expect(<-doneCh).NotTo(HaveOccurred())
 	})
 
-	Context("with port", func() {
-		var port string
+	Context("capture stdout", func() {
+		var stdout, pr, pw *os.File
 		BeforeEach(func() {
-			port, _ = getFreePort()
-			os.Setenv(TCPPortEnvName, port)
+			stdout = os.Stdout
+			pr, pw, _ = os.Pipe()
+			os.Stdout = pw
 		})
-
-		It("start server", func() {
-			cancel()
-			Expect(<-doneCh).NotTo(HaveOccurred())
+		AfterEach(func() {
+			pr.Close()
+			pw.Close()
+			os.Stdout = stdout
 		})
-
 		It("accept connection", func() {
-			client, err := rpc.Dial("tcp", "localhost:"+port)
+			scanner := bufio.NewScanner(pr)
+			scanner.Scan()
+			line := scanner.Text()
+			token := strings.Split(line, "|")
+			Expect(token).To(HaveLen(4))
+
+			client, err := rpc.Dial(token[2], token[3])
 			Expect(err).NotTo(HaveOccurred())
 			defer client.Close()
 
@@ -183,7 +185,6 @@ var _ = Describe("Serve", func() {
 			Expect(version).To(Equal(CurrentProtocolVersion))
 		})
 	})
-
 })
 
 func makeResource() types.Resource {

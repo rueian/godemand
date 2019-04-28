@@ -3,18 +3,15 @@ package plugin
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/rpc"
 	"os"
-	"strconv"
 
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
-var (
-	TCPPortNotIntegerErr = xerrors.New(TCPPortEnvName + " should be integer")
-)
+const ListenedSign = "PLUGIN_LISTENED"
 
 type FindResourceArgs struct {
 	Pool   types.ResourcePool
@@ -74,15 +71,13 @@ func Serve(ctx context.Context, controller Controller) error {
 		return err
 	}
 
-	port := os.Getenv(TCPPortEnvName)
-	if _, err := strconv.Atoi(port); err != nil {
-		return xerrors.Errorf("fail to parse the port number: %q: %w", port, TCPPortNotIntegerErr)
-	}
-
-	l, err := net.Listen("tcp", "localhost:"+port)
+	l, err := net.Listen("tcp", "localhost:0")
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("%s|%d|%s|%s\n", ListenedSign, CurrentProtocolVersion, l.Addr().Network(), l.Addr().String())
+	os.Stdout.Sync()
 
 	go func() {
 		<-ctx.Done()
