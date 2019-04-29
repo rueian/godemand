@@ -40,11 +40,12 @@ func NewLauncher(param CmdParam, logger *log.Logger) *Launcher {
 }
 
 type Launcher struct {
-	CmdParam CmdParam
-	client   *rpc.Client
-	cancel   context.CancelFunc
-	logger   *log.Logger
-	doneCh   chan error
+	CmdParam   CmdParam
+	Controller Controller
+	client     *rpc.Client
+	cancel     context.CancelFunc
+	logger     *log.Logger
+	doneCh     chan error
 }
 
 func (l *Launcher) Launch() (Controller, error) {
@@ -123,7 +124,8 @@ func (l *Launcher) Launch() (Controller, error) {
 		return nil, err
 	}
 
-	return &rpcClient{client: l.client}, nil
+	l.Controller = &rpcClient{client: l.client}
+	return l.Controller, nil
 }
 
 func (l *Launcher) Err() error {
