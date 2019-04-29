@@ -42,6 +42,7 @@ func NewLauncher(param CmdParam, logger *log.Logger) *Launcher {
 type Launcher struct {
 	CmdParam   CmdParam
 	Controller Controller
+	command    *exec.Cmd
 	client     *rpc.Client
 	cancel     context.CancelFunc
 	logger     *log.Logger
@@ -67,6 +68,7 @@ func (l *Launcher) Launch() (Controller, error) {
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
+	l.command = cmd
 	l.doneCh = make(chan error)
 	listenCh := make(chan string)
 	go func() {

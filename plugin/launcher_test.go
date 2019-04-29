@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"log"
 	"strings"
-	"testing"
+	"syscall"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -105,9 +105,25 @@ var _ = Describe("PluginLauncher", func() {
 			Expect(res.State).To(Equal(types.ResourceDeleted))
 		})
 	})
-})
 
-func TestPluginLauncher(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "PluginLauncher Suite")
-}
+	Context("with plugin terminated", func() {
+		JustBeforeEach(func() {
+			launcher.command.Process.Signal(syscall.SIGINT)
+			err = launcher.Err()
+		})
+
+		It("get return code via Err()", func() {
+			Expect(err.Error()).To(ContainSubstring("exit status 1"))
+		})
+
+		It("capture stdout and stderr", func() {
+			var line string
+			scanner := bufio.NewScanner(buf)
+			for scanner.Scan() {
+				line += scanner.Text()
+			}
+			Expect(line).To(ContainSubstring(ListenedSign))                       // stdout
+			Expect(line).To(ContainSubstring("use of closed network connection")) // stderr
+		})
+	})
+})

@@ -84,6 +84,11 @@ func Serve(ctx context.Context, controller Controller) error {
 		l.Close()
 	}()
 
-	s.Accept(l)
-	return nil
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			return err
+		}
+		go s.ServeConn(conn)
+	}
 }

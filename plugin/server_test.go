@@ -10,7 +10,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"testing"
 	"time"
 
 	"github.com/golang/mock/gomock"
@@ -153,7 +152,7 @@ var _ = Describe("Serve", func() {
 
 	It("start server", func() {
 		cancel()
-		Expect(<-doneCh).NotTo(HaveOccurred())
+		Expect((<-doneCh).Error()).To(ContainSubstring("use of closed network connection"))
 	})
 
 	Context("capture stdout", func() {
@@ -207,9 +206,4 @@ func makeMeta() map[string]interface{} {
 	return map[string]interface{}{
 		strconv.Itoa(rand.Int()): strconv.Itoa(rand.Int()),
 	}
-}
-
-func TestPluginServer(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "PluginServer Suite")
 }

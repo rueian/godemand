@@ -2,7 +2,6 @@ package plugin
 
 import (
 	"os/exec"
-	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -122,8 +121,3 @@ var _ = Describe("LaunchPad", func() {
 		})
 	})
 })
-
-func TestLaunchPad(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "TestLaunchPad Suite")
-}

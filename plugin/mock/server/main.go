@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
 
@@ -19,8 +21,19 @@ func main() {
 	// print all envs for testing
 	fmt.Println(strings.Join(os.Environ(), " "))
 
-	if err := plugin.Serve(context.Background(), &PuppetController{}); err != nil {
-		panic(err)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c)
+		<-c
+		cancel()
+	}()
+
+	if err := plugin.Serve(ctx, &PuppetController{}); err != nil {
+		log.SetOutput(os.Stderr)
+		log.Println(err)
+		os.Stderr.Sync()
+		os.Exit(1)
 	}
 }
 
