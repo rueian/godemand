@@ -10,7 +10,7 @@ const (
 	ResourceRunning
 	ResourceDeleting
 	ResourceDeleted
-	ResourceUnkown
+	ResourceUnknown
 	ResourceError
 )
 
