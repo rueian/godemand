@@ -15,11 +15,12 @@ const (
 )
 
 type Resource struct {
-	ID          string
-	PoolID      string
-	Meta        Meta
-	State       ResourceState
-	StateChange time.Time
-	LastSynced  time.Time
-	Clients     []Client
+	ID                  string
+	PoolID              string
+	Meta                Meta
+	State               ResourceState
+	StateChange         time.Time
+	LastSynced          time.Time
+	LastClientHeartbeat time.Time
+	Clients             []Client
 }
