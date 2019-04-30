@@ -5,14 +5,24 @@ import (
 	"sync"
 )
 
-type Errors []error
+type Errors struct {
+	errs []error
+}
 
-func (e Errors) Error() string {
-	m := make([]string, len(e))
-	for i, err := range e {
+func (e *Errors) Error() string {
+	m := make([]string, len(e.errs))
+	for i, err := range e.errs {
 		m[i] = err.Error()
 	}
 	return strings.Join(m, " ")
+}
+
+func (e *Errors) Append(err error) {
+	e.errs = append(e.errs, err)
+}
+
+func (e *Errors) Len() int {
+	return len(e.errs)
 }
 
 func NewLaunchpad() *Launchpad {
@@ -45,7 +55,7 @@ func (p *Launchpad) SetLaunchers(params map[string]CmdParam) error {
 			launcher := NewLauncher(param, nil)
 			_, err := launcher.Launch()
 			if err != nil {
-				errs = append(errs, err)
+				errs.Append(err)
 			} else {
 				p.mu.Lock()
 				p.launchers[k] = launcher
@@ -55,7 +65,10 @@ func (p *Launchpad) SetLaunchers(params map[string]CmdParam) error {
 			p.mu.Unlock()
 		}
 	}
-	return errs
+	if errs.Len() > 0 {
+		return &errs
+	}
+	return nil
 }
 
 func (p *Launchpad) GetController(name string) Controller {
