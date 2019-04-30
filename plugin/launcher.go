@@ -47,6 +47,7 @@ type Launcher struct {
 	cancel     context.CancelFunc
 	logger     *log.Logger
 	doneCh     chan error
+	err        error
 }
 
 func (l *Launcher) Launch() (Controller, error) {
@@ -69,7 +70,7 @@ func (l *Launcher) Launch() (Controller, error) {
 		return nil, err
 	}
 	l.command = cmd
-	l.doneCh = make(chan error)
+	l.doneCh = make(chan error, 1)
 	listenCh := make(chan string)
 	go func() {
 		scanner := bufio.NewScanner(stdout)
@@ -131,10 +132,16 @@ func (l *Launcher) Launch() (Controller, error) {
 }
 
 func (l *Launcher) Err() error {
-	if l.doneCh != nil {
-		return <-l.doneCh
+	for {
+		err, more := <-l.doneCh
+		if err != nil {
+			l.err = err
+			return l.err
+		}
+		if !more {
+			return l.err
+		}
 	}
-	return nil
 }
 
 func (l *Launcher) Close() {

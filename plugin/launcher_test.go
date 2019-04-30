@@ -116,6 +116,10 @@ var _ = Describe("PluginLauncher", func() {
 			Expect(err.Error()).To(ContainSubstring("exit status 1"))
 		})
 
+		It("get same err via Err()", func() {
+			Expect(err).To(Equal(launcher.Err()))
+		})
+
 		It("capture stdout and stderr", func() {
 			var line string
 			scanner := bufio.NewScanner(buf)

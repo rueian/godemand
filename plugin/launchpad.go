@@ -59,6 +59,14 @@ func (p *Launchpad) SetLaunchers(params map[string]CmdParam) error {
 			} else {
 				p.mu.Lock()
 				p.launchers[k] = launcher
+				go func() {
+					if err := launcher.Err(); err != nil {
+						// TODO: logging
+					}
+					p.mu.Lock()
+					defer p.mu.Unlock()
+					delete(p.launchers, k)
+				}()
 				p.mu.Unlock()
 			}
 		} else {
