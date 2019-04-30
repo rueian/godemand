@@ -14,5 +14,5 @@ require (
 	golang.org/x/tools v0.0.0-20190424031103-cb2dda6eabdf // indirect
 	golang.org/x/xerrors v0.0.0-20190410155217-1f06c39b4373
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	gopkg.in/yaml.v2 v2.2.2 // indirect
+	gopkg.in/yaml.v2 v2.2.2
 )
