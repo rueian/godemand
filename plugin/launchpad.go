@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/rueian/godemand/types"
 	"golang.org/x/xerrors"
 )
 
@@ -40,7 +41,7 @@ type Launchpad struct {
 	mu        sync.Mutex
 }
 
-func (p *Launchpad) SetLaunchers(params map[string]CmdParam) error {
+func (p *Launchpad) SetLaunchers(params map[string]types.CmdParam) error {
 	p.mu.Lock()
 	for k, l := range p.launchers {
 		if param, ok := params[k]; !ok || changed(l.CmdParam, param) {
@@ -83,7 +84,7 @@ func (p *Launchpad) SetLaunchers(params map[string]CmdParam) error {
 	return nil
 }
 
-func (p *Launchpad) GetController(name string) (controller Controller, err error) {
+func (p *Launchpad) GetController(name string) (controller types.Controller, err error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if l, ok := p.launchers[name]; ok {
@@ -93,10 +94,10 @@ func (p *Launchpad) GetController(name string) (controller Controller, err error
 }
 
 func (p *Launchpad) Close() {
-	p.SetLaunchers(map[string]CmdParam{})
+	p.SetLaunchers(map[string]types.CmdParam{})
 }
 
-func changed(p1, p2 CmdParam) bool {
+func changed(p1, p2 types.CmdParam) bool {
 	if p1.Path != p2.Path {
 		return true
 	}

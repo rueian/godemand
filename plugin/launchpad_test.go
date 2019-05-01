@@ -5,17 +5,18 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/rueian/godemand/types"
 	"golang.org/x/xerrors"
 )
 
 var _ = Describe("LaunchPad", func() {
 	var launchpad *Launchpad
-	var params map[string]CmdParam
+	var params map[string]types.CmdParam
 	var err error
 
 	BeforeEach(func() {
 		launchpad = NewLaunchpad()
-		params = map[string]CmdParam{
+		params = map[string]types.CmdParam{
 			"puppet": {
 				Name: "PuppetController",
 				Path: "./mock/server/puppet",
@@ -42,7 +43,7 @@ var _ = Describe("LaunchPad", func() {
 
 		Context("with failed params", func() {
 			BeforeEach(func() {
-				params["failed"] = CmdParam{Path: "notfound"}
+				params["failed"] = types.CmdParam{Path: "notfound"}
 			})
 
 			It("return error", func() {
@@ -67,7 +68,7 @@ var _ = Describe("LaunchPad", func() {
 
 		Context("with update", func() {
 			JustBeforeEach(func() {
-				params["puppet"] = CmdParam{
+				params["puppet"] = types.CmdParam{
 					Name: "PuppetController",
 					Path: "./mock/server/puppet",
 					Envs: []string{"CUSTOM=2"},
@@ -83,7 +84,7 @@ var _ = Describe("LaunchPad", func() {
 
 		Context("with update failed", func() {
 			JustBeforeEach(func() {
-				params["puppet"] = CmdParam{Path: "notfound"}
+				params["puppet"] = types.CmdParam{Path: "notfound"}
 				err = launchpad.SetLaunchers(params)
 			})
 
@@ -95,7 +96,7 @@ var _ = Describe("LaunchPad", func() {
 
 		Context("with removed param", func() {
 			JustBeforeEach(func() {
-				params = map[string]CmdParam{}
+				params = map[string]types.CmdParam{}
 				err = launchpad.SetLaunchers(params)
 			})
 

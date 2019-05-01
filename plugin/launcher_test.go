@@ -15,13 +15,13 @@ import (
 
 var _ = Describe("PluginLauncher", func() {
 	var launcher *Launcher
-	var cmdParam CmdParam
+	var cmdParam types.CmdParam
 	var buf *bytes.Buffer
-	var controller Controller
+	var controller types.Controller
 	var err error
 
 	BeforeEach(func() {
-		cmdParam = CmdParam{
+		cmdParam = types.CmdParam{
 			Name: "PuppetController",
 			Path: "./mock/server/puppet",
 		}

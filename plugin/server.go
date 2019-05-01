@@ -24,7 +24,7 @@ type SyncResourceArgs struct {
 }
 
 type Server struct {
-	controller Controller
+	controller types.Controller
 }
 
 func (*Server) ProtocolVersion(args *int, reply *int) error {
@@ -62,7 +62,7 @@ func (s *Server) SyncResource(args *[]byte, reply *[]byte) error {
 	return nil
 }
 
-func Serve(ctx context.Context, controller Controller) error {
+func Serve(ctx context.Context, controller types.Controller) error {
 	server := &Server{controller: controller}
 
 	s := rpc.NewServer()

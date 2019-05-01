@@ -26,13 +26,7 @@ var (
 	MalformedLaunchSignError = xerrors.New("plugin prints a malformed sign")
 )
 
-type CmdParam struct {
-	Name string
-	Path string
-	Envs []string
-}
-
-func NewLauncher(param CmdParam, logger *log.Logger) *Launcher {
+func NewLauncher(param types.CmdParam, logger *log.Logger) *Launcher {
 	if logger == nil {
 		logger = log.New(os.Stderr, "", log.LstdFlags)
 	}
@@ -40,8 +34,8 @@ func NewLauncher(param CmdParam, logger *log.Logger) *Launcher {
 }
 
 type Launcher struct {
-	CmdParam   CmdParam
-	Controller Controller
+	CmdParam   types.CmdParam
+	Controller types.Controller
 	command    *exec.Cmd
 	client     *rpc.Client
 	cancel     context.CancelFunc
@@ -50,7 +44,7 @@ type Launcher struct {
 	err        error
 }
 
-func (l *Launcher) Launch() (Controller, error) {
+func (l *Launcher) Launch() (types.Controller, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	l.cancel = cancel
 

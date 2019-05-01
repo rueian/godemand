@@ -7,7 +7,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/rueian/godemand/plugin"
+	"github.com/rueian/godemand/types"
 	"golang.org/x/xerrors"
 	"gopkg.in/yaml.v2"
 )
@@ -92,7 +92,7 @@ pools:
 
 		Describe("GetPluginCmd", func() {
 			It("turn config into map of CmdParam", func() {
-				Expect(config.GetPluginCmd()).To(Equal(map[string]plugin.CmdParam{
+				Expect(config.GetPluginCmd()).To(Equal(map[string]types.CmdParam{
 					"plugin1": {
 						Name: "plugin1",
 						Path: "/something",

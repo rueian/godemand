@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/rueian/godemand/plugin"
+	"github.com/rueian/godemand/types"
 	"golang.org/x/xerrors"
 	"gopkg.in/yaml.v2"
 )
@@ -26,10 +26,10 @@ type PoolConfig struct {
 	Params map[string]interface{} `yaml:"params"`
 }
 
-func (c *Config) GetPluginCmd() map[string]plugin.CmdParam {
-	ret := make(map[string]plugin.CmdParam)
+func (c *Config) GetPluginCmd() map[string]types.CmdParam {
+	ret := make(map[string]types.CmdParam)
 	for k, v := range c.Plugins {
-		ret[k] = plugin.CmdParam{
+		ret[k] = types.CmdParam{
 			Name: k,
 			Path: v.Path,
 			Envs: v.Envs,
