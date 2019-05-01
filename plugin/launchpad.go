@@ -3,7 +3,11 @@ package plugin
 import (
 	"strings"
 	"sync"
+
+	"golang.org/x/xerrors"
 )
+
+var ControllerNotFoundErr = xerrors.New("Controller not found in launchpad")
 
 type Errors struct {
 	errs []error
@@ -79,13 +83,13 @@ func (p *Launchpad) SetLaunchers(params map[string]CmdParam) error {
 	return nil
 }
 
-func (p *Launchpad) GetController(name string) Controller {
+func (p *Launchpad) GetController(name string) (controller Controller, err error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if l, ok := p.launchers[name]; ok {
-		return l.Controller
+		return l.Controller, nil
 	}
-	return nil
+	return nil, xerrors.Errorf("fail to get controller %q: %w", name, ControllerNotFoundErr)
 }
 
 func (p *Launchpad) Close() {

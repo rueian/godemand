@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"golang.org/x/xerrors"
 )
 
 var _ = Describe("LaunchPad", func() {
@@ -107,10 +108,12 @@ var _ = Describe("LaunchPad", func() {
 
 	Describe("GetController", func() {
 		It("get launched controller", func() {
-			Expect(launchpad.GetController("puppet")).NotTo(BeNil())
+			controller, _ := launchpad.GetController("puppet")
+			Expect(controller).NotTo(BeNil())
 		})
-		It("get nil if not launched", func() {
-			Expect(launchpad.GetController("random")).To(BeNil())
+		It("get ControllerNotFoundErr if not launched", func() {
+			_, err := launchpad.GetController("random")
+			Expect(xerrors.Is(err, ControllerNotFoundErr)).To(BeTrue())
 		})
 	})
 
