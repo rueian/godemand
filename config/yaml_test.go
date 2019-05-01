@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/plugin"
+	"golang.org/x/xerrors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -44,19 +45,13 @@ pools:
 		It("parsed", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(*config).To(Equal(Config{
-				Plugins: map[string]struct {
-					Path string   `yaml:"path"`
-					Envs []string `yaml:"envs"`
-				}{
+				Plugins: map[string]PluginConfig{
 					"plugin1": {
 						Path: "/something",
 						Envs: []string{"A=B", "C=D"},
 					},
 				},
-				Pools: map[string]struct {
-					Plugin string                 `yaml:"plugin"`
-					Params map[string]interface{} `yaml:"params"`
-				}{
+				Pools: map[string]PoolConfig{
 					"pool1": {
 						Plugin: "plugin1",
 						Params: map[string]interface{}{
@@ -66,6 +61,33 @@ pools:
 					},
 				},
 			}))
+		})
+
+		Describe("GetPoolConfig", func() {
+			var pool PoolConfig
+			var id string
+
+			JustBeforeEach(func() {
+				pool, err = config.GetPool(id)
+			})
+
+			Context("exist", func() {
+				BeforeEach(func() {
+					id = "pool1"
+				})
+				It("loaded", func() {
+					Expect(err).NotTo(HaveOccurred())
+					Expect(pool).To(Equal(config.Pools[id]))
+				})
+			})
+			Context("not exist", func() {
+				BeforeEach(func() {
+					id = "random"
+				})
+				It("not found", func() {
+					Expect(xerrors.Is(err, PoolConfigNotFoundErr)).To(BeTrue())
+				})
+			})
 		})
 
 		Describe("GetPluginCmd", func() {
