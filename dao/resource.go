@@ -25,8 +25,9 @@ type InMemoryResourceStoreOptionFunc func(*InMemoryResourceStore)
 
 func NewInMemoryResourceStore(options ...InMemoryResourceStoreOptionFunc) *InMemoryResourceStore {
 	s := &InMemoryResourceStore{
-		pools:  make(map[string]types.ResourcePool),
-		events: make(map[string][]types.ResourceEvent),
+		pools:             make(map[string]types.ResourcePool),
+		events:            make(map[string][]types.ResourceEvent),
+		eventLimitPerPool: 1000,
 	}
 
 	for _, of := range options {
