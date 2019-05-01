@@ -14,11 +14,6 @@ var (
 	LockNotFoundErr = xerrors.New("lock not found")
 )
 
-type Locker interface {
-	AcquireLock(key string) (id string, err error)
-	ReleaseLock(key, id string) error
-}
-
 func NewInMemoryLocker() *InMemoryLocker {
 	return &InMemoryLocker{
 		seed: rand.NewSource(time.Now().Unix()),
