@@ -16,17 +16,17 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/types"
-	mock2 "github.com/rueian/godemand/types/mock"
+	"github.com/rueian/godemand/types/mock"
 )
 
 var _ = Describe("Server", func() {
 	var server *Server
 	var ctrl *gomock.Controller
-	var controller *mock2.MockController
+	var controller *mock.MockController
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
-		controller = mock2.NewMockController(ctrl)
+		controller = mock.NewMockController(ctrl)
 		server = &Server{controller: controller}
 	})
 
@@ -130,7 +130,7 @@ var _ = Describe("Server", func() {
 
 var _ = Describe("Serve", func() {
 	var ctrl *gomock.Controller
-	var controller *mock2.MockController
+	var controller *mock.MockController
 	var ctx context.Context
 	var cancel context.CancelFunc
 	var doneCh chan error
@@ -138,7 +138,7 @@ var _ = Describe("Serve", func() {
 	JustBeforeEach(func() {
 		doneCh = make(chan error)
 		ctrl = gomock.NewController(GinkgoT())
-		controller = mock2.NewMockController(ctrl)
+		controller = mock.NewMockController(ctrl)
 		ctx, cancel = context.WithCancel(context.Background())
 		go func() {
 			doneCh <- Serve(ctx, controller)
