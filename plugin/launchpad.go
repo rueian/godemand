@@ -70,6 +70,7 @@ func (p *Launchpad) SetLaunchers(params map[string]types.CmdParam) error {
 					}
 					p.mu.Lock()
 					defer p.mu.Unlock()
+					launcher.Close()
 					delete(p.launchers, k)
 				}()
 				p.mu.Unlock()
