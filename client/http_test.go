@@ -57,16 +57,6 @@ var _ = Describe("Client", func() {
 			})
 		})
 
-		Context("api pool not found", func() {
-			BeforeEach(func() {
-				ctx = context.Background()
-				service.EXPECT().RequestResource(poolID, info).Return(types.Resource{}, dao.PoolNotFoundErr)
-			})
-			It("err", func() {
-				Expect(err.Error()).To(ContainSubstring("not found"))
-			})
-		})
-
 		Context("api resource not found", func() {
 			BeforeEach(func() {
 				ctx = context.Background()

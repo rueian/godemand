@@ -79,7 +79,6 @@ var _ = Describe("NewHTTPMux", func() {
 			})
 
 			for _, c := range []errorCase{
-				makeErrorCase("no pool", 404, types.Resource{}, dao.PoolNotFoundErr),
 				makeErrorCase("lock fail", 429, types.Resource{}, dao.AcquireLaterErr),
 				makeErrorCase("no config", 500, types.Resource{}, config.PoolConfigNotFoundErr),
 				makeErrorCase("no plugin", 500, types.Resource{}, plugin.ControllerNotFoundErr),
@@ -121,7 +120,6 @@ var _ = Describe("NewHTTPMux", func() {
 			})
 
 			for _, c := range []errorCase{
-				makeErrorCase("no pool", 404, types.Resource{}, dao.PoolNotFoundErr),
 				makeErrorCase("no res", 404, types.Resource{}, ResourceNotFoundErr),
 				makeErrorCase("other err", 500, types.Resource{}, errors.New("random")),
 			} {
@@ -171,7 +169,6 @@ var _ = Describe("NewHTTPMux", func() {
 			})
 
 			for _, c := range []errorCase{
-				makeErrorCase("no pool", 404, dao.PoolNotFoundErr),
 				makeErrorCase("no res", 404, ResourceNotFoundErr),
 				makeErrorCase("lock fail", 429, dao.AcquireLaterErr),
 				makeErrorCase("other err", 500, errors.New("random")),

@@ -8,7 +8,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
 var _ = Describe("InMemoryResourceStore", func() {
@@ -20,33 +19,10 @@ var _ = Describe("InMemoryResourceStore", func() {
 
 	BeforeEach(func() {
 		store = NewInMemoryResourceStore(WithEventLimitPerPool(5))
-		pool, err = store.AddResourcePool(DefaultPool)
-	})
-
-	Describe("AddResourcePool", func() {
-		It("inits the pool with resources map", func() {
-			Expect(err).NotTo(HaveOccurred())
-			Expect(pool.ID).To(Equal(DefaultPool))
-			Expect(pool.Resources).NotTo(BeNil())
-		})
-
-		It("does not override the pool if already exists", func() {
-			pool.Resources["a"] = types.Resource{ID: "b"}
-			pool, err = store.AddResourcePool(DefaultPool)
-
-			Expect(err).NotTo(HaveOccurred())
-			Expect(pool.ID).To(Equal(DefaultPool))
-			Expect(pool.Resources).To(HaveKeyWithValue("a", types.Resource{ID: "b"}))
-		})
 	})
 
 	Describe("GetResourcePool", func() {
-		It("get PoolNotFoundErr if no such pool", func() {
-			_, err := store.GetResourcePool("other")
-			Expect(xerrors.Is(err, PoolNotFoundErr)).To(BeTrue())
-		})
-
-		It("get PoolNotFoundErr if no such pool", func() {
+		It("get pool", func() {
 			pool, err := store.GetResourcePool(DefaultPool)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(pool.ID).To(Equal(DefaultPool))
@@ -54,27 +30,18 @@ var _ = Describe("InMemoryResourceStore", func() {
 	})
 
 	Describe("SaveResource", func() {
-		It("get PoolNotFoundErr if no such pool", func() {
-			_, err := store.SaveResource(types.Resource{ID: "a", PoolID: "b"})
-			Expect(xerrors.Is(err, PoolNotFoundErr)).To(BeTrue())
-		})
-
 		It("override the resource", func() {
 			input := types.Resource{ID: "a", PoolID: DefaultPool}
 			res, err := store.SaveResource(input)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res).To(Equal(input))
-
+			pool, err = store.GetResourcePool(DefaultPool)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(pool.Resources).To(HaveKeyWithValue("a", input))
 		})
 	})
 
 	Describe("DeleteResource", func() {
-		It("get PoolNotFoundErr if no such pool", func() {
-			err := store.DeleteResource(types.Resource{ID: "a", PoolID: "b"})
-			Expect(xerrors.Is(err, PoolNotFoundErr)).To(BeTrue())
-		})
-
 		It("get no error if no such resource", func() {
 			err := store.DeleteResource(types.Resource{ID: "a", PoolID: DefaultPool})
 			Expect(err).NotTo(HaveOccurred())
@@ -88,16 +55,13 @@ var _ = Describe("InMemoryResourceStore", func() {
 			err = store.DeleteResource(res)
 			Expect(err).NotTo(HaveOccurred())
 
+			pool, err = store.GetResourcePool(DefaultPool)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(pool.Resources).NotTo(HaveKey(res.ID))
 		})
 	})
 
 	Describe("AppendResourceEvent", func() {
-		It("get PoolNotFoundErr if no such pool", func() {
-			err := store.AppendResourceEvent(types.ResourceEvent{ResourceID: "a", ResourcePoolID: "b"})
-			Expect(xerrors.Is(err, PoolNotFoundErr)).To(BeTrue())
-		})
-
 		It("append events and respect to eventLimitPerPool", func() {
 			for i := 0; i < store.eventLimitPerPool*2; i++ {
 				err := store.AppendResourceEvent(types.ResourceEvent{
@@ -121,22 +85,16 @@ var _ = Describe("InMemoryResourceStore", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 			}
-			p, err := store.AddResourcePool("other")
 			Expect(err).NotTo(HaveOccurred())
 			err = store.AppendResourceEvent(types.ResourceEvent{
 				ResourceID:     "b",
-				ResourcePoolID: p.ID,
+				ResourcePoolID: "other",
 				Timestamp:      time.Now(),
 			})
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		Describe("GetEventsByPool", func() {
-			It("get PoolNotFoundErr if no such pool", func() {
-				_, err := store.GetEventsByPool("b", 10, time.Now())
-				Expect(xerrors.Is(err, PoolNotFoundErr)).To(BeTrue())
-			})
-
 			It("get events desc by timestamp and filter by time", func() {
 				evs, err := store.GetEventsByPool(DefaultPool, 5, time.Now().Add(-1*time.Hour))
 				Expect(err).NotTo(HaveOccurred())
@@ -152,11 +110,6 @@ var _ = Describe("InMemoryResourceStore", func() {
 		})
 
 		Describe("GetEventsByResource", func() {
-			It("get PoolNotFoundErr if no such pool", func() {
-				_, err := store.GetEventsByResource("b", "a", 10, time.Now())
-				Expect(xerrors.Is(err, PoolNotFoundErr)).To(BeTrue())
-			})
-
 			It("get events desc by timestamp and filter by time", func() {
 				evs, err := store.GetEventsByResource(DefaultPool, "1", 5, time.Now().Add(-1*time.Hour))
 				Expect(err).NotTo(HaveOccurred())

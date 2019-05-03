@@ -1,18 +1,13 @@
 package dao
 
 import (
+	"sync"
 	"time"
 
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
-)
-
-var (
-	PoolNotFoundErr = xerrors.New("pool not found")
 )
 
 type ResourceDAO interface {
-	AddResourcePool(id string) (types.ResourcePool, error)
 	GetResourcePool(id string) (types.ResourcePool, error)
 	SaveResource(resource types.Resource) (types.Resource, error)
 	DeleteResource(resource types.Resource) error
@@ -44,52 +39,46 @@ func WithEventLimitPerPool(limit int) InMemoryResourceStoreOptionFunc {
 }
 
 type InMemoryResourceStore struct {
+	mu                sync.RWMutex
 	pools             map[string]types.ResourcePool
 	events            map[string][]types.ResourceEvent
 	eventLimitPerPool int
 }
 
-func (s *InMemoryResourceStore) AddResourcePool(id string) (types.ResourcePool, error) {
-	if pool, ok := s.pools[id]; ok {
-		return pool, nil
-	}
-	s.pools[id] = types.ResourcePool{
-		ID:        id,
-		Resources: make(map[string]types.Resource),
-	}
-	s.events[id] = nil
-	return s.pools[id], nil
-}
-
 func (s *InMemoryResourceStore) GetResourcePool(id string) (types.ResourcePool, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	if pool, ok := s.pools[id]; ok {
 		return pool, nil
 	}
-	return types.ResourcePool{}, xerrors.Errorf("fail to get resource pool %s: %w", id, PoolNotFoundErr)
+	return types.ResourcePool{ID: id, Resources: map[string]types.Resource{}}, nil
 }
 
 func (s *InMemoryResourceStore) SaveResource(resource types.Resource) (types.Resource, error) {
-	pool, err := s.GetResourcePool(resource.PoolID)
-	if err != nil {
-		return types.Resource{}, err
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, ok := s.pools[resource.PoolID]; !ok {
+		s.pools[resource.PoolID] = types.ResourcePool{ID: resource.PoolID, Resources: map[string]types.Resource{}}
 	}
-	pool.Resources[resource.ID] = resource
+	s.pools[resource.PoolID].Resources[resource.ID] = resource
 	return resource, nil
 }
 
 func (s *InMemoryResourceStore) DeleteResource(resource types.Resource) error {
-	pool, err := s.GetResourcePool(resource.PoolID)
-	if err != nil {
-		return err
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if pool, ok := s.pools[resource.PoolID]; ok {
+		delete(pool.Resources, resource.ID)
 	}
-	delete(pool.Resources, resource.ID)
 	return nil
 }
 
 func (s *InMemoryResourceStore) AppendResourceEvent(event types.ResourceEvent) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	events, ok := s.events[event.ResourcePoolID]
 	if !ok {
-		return xerrors.Errorf("fail to append event %v: %w", event, PoolNotFoundErr)
+		events = make([]types.ResourceEvent, 1)
 	}
 	if len(events) >= s.eventLimitPerPool {
 		s.events[event.ResourcePoolID] = append(events[1:], event)
@@ -101,9 +90,11 @@ func (s *InMemoryResourceStore) AppendResourceEvent(event types.ResourceEvent) e
 }
 
 func (s *InMemoryResourceStore) GetEventsByPool(id string, limit int, before time.Time) (result []types.ResourceEvent, err error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	events, ok := s.events[id]
 	if !ok {
-		return nil, xerrors.Errorf("fail to get event by pool %s: %w", id, PoolNotFoundErr)
+		return nil, nil
 	}
 
 	count := 0
@@ -118,9 +109,11 @@ func (s *InMemoryResourceStore) GetEventsByPool(id string, limit int, before tim
 }
 
 func (s *InMemoryResourceStore) GetEventsByResource(poolID, id string, limit int, before time.Time) (result []types.ResourceEvent, err error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	events, ok := s.events[poolID]
 	if !ok {
-		return nil, xerrors.Errorf("fail to get event by pool %s: %w", id, PoolNotFoundErr)
+		return nil, nil
 	}
 
 	count := 0

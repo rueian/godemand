@@ -126,7 +126,6 @@ var _ = Describe("Service", func() {
 			BeforeEach(func() {
 				poolID = "pool1"
 				launchpad.EXPECT().GetController("plugin1").Return(controller, nil)
-				resource.AddResourcePool(poolID)
 				resource.SaveResource(types.Resource{ID: "a", PoolID: poolID})
 				pool, _ = resource.GetResourcePool(poolID)
 				pcfg, _ = cfg.GetPool(poolID)
@@ -196,7 +195,6 @@ var _ = Describe("Service", func() {
 
 		Context("resource exists", func() {
 			BeforeEach(func() {
-				resource.AddResourcePool(poolID)
 				resource.SaveResource(types.Resource{ID: "a", PoolID: poolID})
 			})
 			It("get res", func() {
@@ -206,10 +204,6 @@ var _ = Describe("Service", func() {
 		})
 
 		Context("not found", func() {
-			BeforeEach(func() {
-				resource.AddResourcePool(poolID)
-			})
-
 			It("got err", func() {
 				Expect(err.Error()).To(ContainSubstring("not found"))
 			})
@@ -221,7 +215,6 @@ var _ = Describe("Service", func() {
 
 		BeforeEach(func() {
 			resID = "a"
-			resource.AddResourcePool(poolID)
 			resource.SaveResource(types.Resource{ID: "a", PoolID: poolID})
 		})
 
