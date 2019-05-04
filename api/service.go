@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/rueian/godemand/config"
-	"github.com/rueian/godemand/dao"
 	"github.com/rueian/godemand/types"
 	"golang.org/x/xerrors"
 )
@@ -12,7 +11,7 @@ import (
 var ResourceNotFoundErr = xerrors.New("resource not found in pool")
 
 type Service struct {
-	Resource  dao.ResourceDAO
+	Pool      types.ResourcePoolDAO
 	Locker    types.Locker
 	Launchpad types.Launchpad
 	Config    *config.Config
@@ -35,7 +34,7 @@ func (s *Service) RequestResource(poolID string, client types.Client) (res types
 		return types.Resource{}, err
 	}
 
-	pool, err := s.Resource.GetResourcePool(poolID)
+	pool, err := s.Pool.GetResources(poolID)
 	if err != nil {
 		return types.Resource{}, err
 	}
@@ -53,7 +52,7 @@ func (s *Service) RequestResource(poolID string, client types.Client) (res types
 
 	if _, ok := pool.Resources[res.ID]; !ok {
 		res.PoolID = pool.ID
-		res, err = s.Resource.SaveResource(res)
+		res, err = s.Pool.SaveResource(res)
 		event.Meta = types.Meta{
 			"type":   "created",
 			"client": client,
@@ -64,7 +63,7 @@ func (s *Service) RequestResource(poolID string, client types.Client) (res types
 			"client": client,
 		}
 	}
-	if err := s.Resource.AppendResourceEvent(event); err != nil {
+	if err := s.Pool.AppendEvent(event); err != nil {
 		return types.Resource{}, err
 	}
 
@@ -72,7 +71,7 @@ func (s *Service) RequestResource(poolID string, client types.Client) (res types
 }
 
 func (s *Service) GetResource(poolID, id string) (res types.Resource, err error) {
-	pool, err := s.Resource.GetResourcePool(poolID)
+	pool, err := s.Pool.GetResources(poolID)
 	if err != nil {
 		return types.Resource{}, err
 	}
@@ -107,7 +106,7 @@ func (s *Service) Heartbeat(poolID, id string, client types.Client) (err error) 
 	}
 
 	res.LastClientHeartbeat = now
-	_, err = s.Resource.SaveResource(res)
+	_, err = s.Pool.SaveResource(res)
 	if err != nil {
 		return err
 	}

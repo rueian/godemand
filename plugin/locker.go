@@ -1,4 +1,4 @@
-package dao
+package plugin
 
 import (
 	"math/rand"

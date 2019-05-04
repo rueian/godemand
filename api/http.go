@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/rueian/godemand/dao"
+	"github.com/rueian/godemand/plugin"
 	"github.com/rueian/godemand/types"
 	"golang.org/x/xerrors"
 )
@@ -82,7 +82,7 @@ func handleClient(w http.ResponseWriter, input string) (client types.Client, ok 
 }
 
 func handleErr(w http.ResponseWriter, err error) bool {
-	if xerrors.Is(err, dao.AcquireLaterErr) {
+	if xerrors.Is(err, plugin.AcquireLaterErr) {
 		w.WriteHeader(429)
 	} else if xerrors.Is(err, ResourceNotFoundErr) {
 		w.WriteHeader(404)

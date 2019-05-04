@@ -1,4 +1,4 @@
-package dao
+package resource
 
 import (
 	"strconv"
@@ -10,20 +10,20 @@ import (
 	"github.com/rueian/godemand/types"
 )
 
-var _ = Describe("InMemoryResourceStore", func() {
+var _ = Describe("InMemoryResourcePool", func() {
 	var DefaultPool = "default"
-	var store *InMemoryResourceStore
+	var store *InMemoryResourcePool
 
 	var err error
 	var pool types.ResourcePool
 
 	BeforeEach(func() {
-		store = NewInMemoryResourceStore(WithEventLimitPerPool(5))
+		store = NewInMemoryResourcePool(WithEventLimitPerPool(5))
 	})
 
-	Describe("GetResourcePool", func() {
+	Describe("GetResources", func() {
 		It("get pool", func() {
-			pool, err := store.GetResourcePool(DefaultPool)
+			pool, err := store.GetResources(DefaultPool)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(pool.ID).To(Equal(DefaultPool))
 		})
@@ -35,7 +35,7 @@ var _ = Describe("InMemoryResourceStore", func() {
 			res, err := store.SaveResource(input)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res).To(Equal(input))
-			pool, err = store.GetResourcePool(DefaultPool)
+			pool, err = store.GetResources(DefaultPool)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(pool.Resources).To(HaveKeyWithValue("a", input))
 		})
@@ -55,16 +55,16 @@ var _ = Describe("InMemoryResourceStore", func() {
 			err = store.DeleteResource(res)
 			Expect(err).NotTo(HaveOccurred())
 
-			pool, err = store.GetResourcePool(DefaultPool)
+			pool, err = store.GetResources(DefaultPool)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(pool.Resources).NotTo(HaveKey(res.ID))
 		})
 	})
 
-	Describe("AppendResourceEvent", func() {
+	Describe("AppendEvent", func() {
 		It("append events and respect to eventLimitPerPool", func() {
 			for i := 0; i < store.eventLimitPerPool*2; i++ {
-				err := store.AppendResourceEvent(types.ResourceEvent{
+				err := store.AppendEvent(types.ResourceEvent{
 					ResourceID:     "a",
 					ResourcePoolID: DefaultPool,
 					Timestamp:      time.Now(),
@@ -78,7 +78,7 @@ var _ = Describe("InMemoryResourceStore", func() {
 	Describe("GetEvents", func() {
 		BeforeEach(func() {
 			for i := 0; i < store.eventLimitPerPool; i++ {
-				err := store.AppendResourceEvent(types.ResourceEvent{
+				err := store.AppendEvent(types.ResourceEvent{
 					ResourceID:     strconv.Itoa(i % 2),
 					ResourcePoolID: DefaultPool,
 					Timestamp:      time.Now().Add(-1 * time.Duration(i) * time.Hour),
@@ -86,7 +86,7 @@ var _ = Describe("InMemoryResourceStore", func() {
 				Expect(err).NotTo(HaveOccurred())
 			}
 			Expect(err).NotTo(HaveOccurred())
-			err = store.AppendResourceEvent(types.ResourceEvent{
+			err = store.AppendEvent(types.ResourceEvent{
 				ResourceID:     "b",
 				ResourcePoolID: "other",
 				Timestamp:      time.Now(),
@@ -128,5 +128,5 @@ var _ = Describe("InMemoryResourceStore", func() {
 
 func TestInMemoryResourceStore(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "InMemoryResourceStore Suite")
+	RunSpecs(t, "InMemoryResourcePool Suite")
 }

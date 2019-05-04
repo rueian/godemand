@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/api"
-	"github.com/rueian/godemand/dao"
+	"github.com/rueian/godemand/plugin"
 	"github.com/rueian/godemand/types"
 	"github.com/rueian/godemand/types/mock"
 	"golang.org/x/xerrors"
@@ -71,7 +71,7 @@ var _ = Describe("Client", func() {
 		Context("api lock retry", func() {
 			BeforeEach(func() {
 				ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
-				service.EXPECT().RequestResource(poolID, info).Return(types.Resource{}, dao.AcquireLaterErr).Times(2)
+				service.EXPECT().RequestResource(poolID, info).Return(types.Resource{}, plugin.AcquireLaterErr).Times(2)
 			})
 			It("err", func() {
 				Expect(err.Error()).To(ContainSubstring("acquire later"))

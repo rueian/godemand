@@ -12,7 +12,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/config"
-	"github.com/rueian/godemand/dao"
 	"github.com/rueian/godemand/plugin"
 	"github.com/rueian/godemand/types"
 	"github.com/rueian/godemand/types/mock"
@@ -79,7 +78,7 @@ var _ = Describe("NewHTTPMux", func() {
 			})
 
 			for _, c := range []errorCase{
-				makeErrorCase("lock fail", 429, types.Resource{}, dao.AcquireLaterErr),
+				makeErrorCase("lock fail", 429, types.Resource{}, plugin.AcquireLaterErr),
 				makeErrorCase("no config", 500, types.Resource{}, config.PoolConfigNotFoundErr),
 				makeErrorCase("no plugin", 500, types.Resource{}, plugin.ControllerNotFoundErr),
 				makeErrorCase("other err", 500, types.Resource{}, errors.New("random")),
@@ -170,7 +169,7 @@ var _ = Describe("NewHTTPMux", func() {
 
 			for _, c := range []errorCase{
 				makeErrorCase("no res", 404, ResourceNotFoundErr),
-				makeErrorCase("lock fail", 429, dao.AcquireLaterErr),
+				makeErrorCase("lock fail", 429, plugin.AcquireLaterErr),
 				makeErrorCase("other err", 500, errors.New("random")),
 			} {
 				func(c errorCase) {

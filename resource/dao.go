@@ -1,4 +1,4 @@
-package dao
+package resource
 
 import (
 	"sync"
@@ -7,19 +7,10 @@ import (
 	"github.com/rueian/godemand/types"
 )
 
-type ResourceDAO interface {
-	GetResourcePool(id string) (types.ResourcePool, error)
-	SaveResource(resource types.Resource) (types.Resource, error)
-	DeleteResource(resource types.Resource) error
-	AppendResourceEvent(event types.ResourceEvent) error
-	GetEventsByPool(id string, limit int, before time.Time) ([]types.ResourceEvent, error)
-	GetEventsByResource(poolID, id string, limit int, before time.Time) ([]types.ResourceEvent, error)
-}
+type InMemoryResourcePoolOptionFunc func(*InMemoryResourcePool)
 
-type InMemoryResourceStoreOptionFunc func(*InMemoryResourceStore)
-
-func NewInMemoryResourceStore(options ...InMemoryResourceStoreOptionFunc) *InMemoryResourceStore {
-	s := &InMemoryResourceStore{
+func NewInMemoryResourcePool(options ...InMemoryResourcePoolOptionFunc) *InMemoryResourcePool {
+	s := &InMemoryResourcePool{
 		pools:             make(map[string]types.ResourcePool),
 		events:            make(map[string][]types.ResourceEvent),
 		eventLimitPerPool: 1000,
@@ -32,20 +23,20 @@ func NewInMemoryResourceStore(options ...InMemoryResourceStoreOptionFunc) *InMem
 	return s
 }
 
-func WithEventLimitPerPool(limit int) InMemoryResourceStoreOptionFunc {
-	return func(store *InMemoryResourceStore) {
+func WithEventLimitPerPool(limit int) InMemoryResourcePoolOptionFunc {
+	return func(store *InMemoryResourcePool) {
 		store.eventLimitPerPool = limit
 	}
 }
 
-type InMemoryResourceStore struct {
+type InMemoryResourcePool struct {
 	mu                sync.RWMutex
 	pools             map[string]types.ResourcePool
 	events            map[string][]types.ResourceEvent
 	eventLimitPerPool int
 }
 
-func (s *InMemoryResourceStore) GetResourcePool(id string) (types.ResourcePool, error) {
+func (s *InMemoryResourcePool) GetResources(id string) (types.ResourcePool, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if pool, ok := s.pools[id]; ok {
@@ -54,7 +45,7 @@ func (s *InMemoryResourceStore) GetResourcePool(id string) (types.ResourcePool, 
 	return types.ResourcePool{ID: id, Resources: map[string]types.Resource{}}, nil
 }
 
-func (s *InMemoryResourceStore) SaveResource(resource types.Resource) (types.Resource, error) {
+func (s *InMemoryResourcePool) SaveResource(resource types.Resource) (types.Resource, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if _, ok := s.pools[resource.PoolID]; !ok {
@@ -64,7 +55,7 @@ func (s *InMemoryResourceStore) SaveResource(resource types.Resource) (types.Res
 	return resource, nil
 }
 
-func (s *InMemoryResourceStore) DeleteResource(resource types.Resource) error {
+func (s *InMemoryResourcePool) DeleteResource(resource types.Resource) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if pool, ok := s.pools[resource.PoolID]; ok {
@@ -73,7 +64,7 @@ func (s *InMemoryResourceStore) DeleteResource(resource types.Resource) error {
 	return nil
 }
 
-func (s *InMemoryResourceStore) AppendResourceEvent(event types.ResourceEvent) error {
+func (s *InMemoryResourcePool) AppendEvent(event types.ResourceEvent) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	events, ok := s.events[event.ResourcePoolID]
@@ -89,7 +80,7 @@ func (s *InMemoryResourceStore) AppendResourceEvent(event types.ResourceEvent) e
 	return nil
 }
 
-func (s *InMemoryResourceStore) GetEventsByPool(id string, limit int, before time.Time) (result []types.ResourceEvent, err error) {
+func (s *InMemoryResourcePool) GetEventsByPool(id string, limit int, before time.Time) (result []types.ResourceEvent, err error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	events, ok := s.events[id]
@@ -108,7 +99,7 @@ func (s *InMemoryResourceStore) GetEventsByPool(id string, limit int, before tim
 	return result, nil
 }
 
-func (s *InMemoryResourceStore) GetEventsByResource(poolID, id string, limit int, before time.Time) (result []types.ResourceEvent, err error) {
+func (s *InMemoryResourcePool) GetEventsByResource(poolID, id string, limit int, before time.Time) (result []types.ResourceEvent, err error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	events, ok := s.events[poolID]
