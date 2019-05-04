@@ -221,15 +221,6 @@ var _ = Describe("Service", func() {
 			err = service.Heartbeat(poolID, resID, client)
 		})
 
-		Context("lock fail", func() {
-			BeforeEach(func() {
-				lockErr = dao.AcquireLaterErr
-			})
-			It("get err", func() {
-				Expect(xerrors.Is(err, dao.AcquireLaterErr)).To(BeTrue())
-			})
-		})
-
 		Context("not found", func() {
 			BeforeEach(func() {
 				resID = "b"
