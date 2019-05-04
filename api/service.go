@@ -85,17 +85,12 @@ func (s *Service) GetResource(poolID, id string) (res types.Resource, err error)
 }
 
 func (s *Service) Heartbeat(poolID, id string, client types.Client) (err error) {
-	lockID, err := s.Locker.AcquireLock(poolID)
-	if err != nil {
-		return err
-	}
-	defer s.Locker.ReleaseLock(poolID, lockID)
-
 	res, err := s.GetResource(poolID, id)
 	if err != nil {
 		return err
 	}
 
+	// TODO let heartbeat to be impl in dao for better consistence.
 	index := -1
 	for i, c := range res.Clients {
 		if c.ID == client.ID {

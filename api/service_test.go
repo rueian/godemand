@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"testing"
 	"time"
 
 	"github.com/golang/mock/gomock"
@@ -219,10 +218,6 @@ var _ = Describe("Service", func() {
 		})
 
 		JustBeforeEach(func() {
-			locker.EXPECT().AcquireLock(poolID).Return(lockID, lockErr)
-			if lockErr == nil {
-				locker.EXPECT().ReleaseLock(poolID, lockID).Return(nil)
-			}
 			err = service.Heartbeat(poolID, resID, client)
 		})
 
@@ -283,8 +278,3 @@ var _ = Describe("Service", func() {
 		})
 	})
 })
-
-func TestService(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Service Suite")
-}
