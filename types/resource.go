@@ -10,6 +10,8 @@ const (
 	ResourceRunning
 	ResourceDeleting
 	ResourceDeleted
+	ResourceTerminating
+	ResourceTerminated
 	ResourceUnknown
 	ResourceError
 )
