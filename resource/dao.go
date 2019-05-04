@@ -51,6 +51,17 @@ func (s *InMemoryResourcePool) SaveResource(resource types.Resource) (types.Reso
 	if _, ok := s.pools[resource.PoolID]; !ok {
 		s.pools[resource.PoolID] = types.ResourcePool{ID: resource.PoolID, Resources: map[string]types.Resource{}}
 	}
+
+	current, ok := s.pools[resource.PoolID].Resources[resource.ID]
+	if !ok {
+		current = types.Resource{}
+	}
+	if current.Clients == nil {
+		current.Clients = map[string]types.Client{}
+	}
+	resource.Clients = current.Clients
+	resource.LastClientHeartbeat = current.LastClientHeartbeat
+
 	s.pools[resource.PoolID].Resources[resource.ID] = resource
 	return resource, nil
 }
@@ -61,6 +72,50 @@ func (s *InMemoryResourcePool) DeleteResource(resource types.Resource) error {
 	if pool, ok := s.pools[resource.PoolID]; ok {
 		delete(pool.Resources, resource.ID)
 	}
+	return nil
+}
+
+func (s *InMemoryResourcePool) SaveClient(resource types.Resource, client types.Client) (types.Client, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	pool, ok := s.pools[resource.PoolID]
+	if !ok {
+		return types.Client{}, nil
+	}
+
+	current, ok := pool.Resources[resource.ID]
+	if !ok {
+		return types.Client{}, nil
+	}
+
+	now := time.Now()
+	client.Heartbeat = now
+
+	current.Clients[client.ID] = client
+	current.LastClientHeartbeat = now
+
+	return client, nil
+}
+
+func (s *InMemoryResourcePool) DeleteClients(resource types.Resource, clients []types.Client) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	pool, ok := s.pools[resource.PoolID]
+	if !ok {
+		return nil
+	}
+
+	current, ok := pool.Resources[resource.ID]
+	if !ok {
+		return nil
+	}
+
+	for _, c := range clients {
+		delete(current.Clients, c.ID)
+	}
+
 	return nil
 }
 

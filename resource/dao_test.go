@@ -31,7 +31,7 @@ var _ = Describe("InMemoryResourcePool", func() {
 
 	Describe("SaveResource", func() {
 		It("override the resource", func() {
-			input := types.Resource{ID: "a", PoolID: DefaultPool}
+			input := types.Resource{ID: "a", PoolID: DefaultPool, Clients: map[string]types.Client{}}
 			res, err := store.SaveResource(input)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res).To(Equal(input))
@@ -58,6 +58,41 @@ var _ = Describe("InMemoryResourcePool", func() {
 			pool, err = store.GetResources(DefaultPool)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(pool.Resources).NotTo(HaveKey(res.ID))
+		})
+	})
+
+	Describe("SaveClient", func() {
+		It("set client heartbeat", func() {
+			res := types.Resource{ID: "a", PoolID: DefaultPool}
+			_, err := store.SaveResource(res)
+			Expect(err).NotTo(HaveOccurred())
+
+			client := types.Client{ID: "a", Meta: map[string]interface{}{"a": "a"}}
+			_, err = store.SaveClient(res, client)
+			Expect(err).NotTo(HaveOccurred())
+
+			pool, err = store.GetResources(DefaultPool)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(pool.Resources[res.ID].Clients[client.ID].Meta).To(Equal(client.Meta))
+			Expect(pool.Resources[res.ID].Clients[client.ID].Heartbeat).NotTo(BeZero())
+		})
+	})
+
+	Describe("DeleteClients", func() {
+		It("delete clients", func() {
+			res := types.Resource{ID: "a", PoolID: DefaultPool}
+			_, err := store.SaveResource(res)
+			Expect(err).NotTo(HaveOccurred())
+
+			client := types.Client{ID: "a", Meta: map[string]interface{}{"a": "a"}}
+			_, err = store.SaveClient(res, client)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = store.DeleteClients(res, []types.Client{client})
+
+			pool, err = store.GetResources(DefaultPool)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(pool.Resources[res.ID].Clients).NotTo(HaveKey(client.ID))
 		})
 	})
 

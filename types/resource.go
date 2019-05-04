@@ -29,7 +29,7 @@ type Resource struct {
 	StateChange         time.Time
 	LastSynced          time.Time
 	LastClientHeartbeat time.Time
-	Clients             []Client
+	Clients             map[string]Client
 }
 
 type ResourceEvent struct {
@@ -51,6 +51,8 @@ type ResourcePoolDAO interface {
 	GetResources(id string) (ResourcePool, error)
 	SaveResource(resource Resource) (Resource, error)
 	DeleteResource(resource Resource) error
+	SaveClient(resource Resource, client Client) (Client, error)
+	DeleteClients(resource Resource, clients []Client) error
 	AppendEvent(event ResourceEvent) error
 	GetEventsByPool(id string, limit int, before time.Time) ([]ResourceEvent, error)
 	GetEventsByResource(poolID, id string, limit int, before time.Time) ([]ResourceEvent, error)

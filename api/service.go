@@ -84,29 +84,7 @@ func (s *Service) GetResource(poolID, id string) (res types.Resource, err error)
 }
 
 func (s *Service) Heartbeat(poolID, id string, client types.Client) (err error) {
-	res, err := s.GetResource(poolID, id)
-	if err != nil {
-		return err
-	}
-
-	// TODO let heartbeat to be impl in dao for better consistence.
-	index := -1
-	for i, c := range res.Clients {
-		if c.ID == client.ID {
-			index = i
-		}
-	}
-
-	now := time.Now()
-	client.Heartbeat = now
-	if index != -1 {
-		res.Clients[index] = client
-	} else {
-		res.Clients = append(res.Clients, client)
-	}
-
-	res.LastClientHeartbeat = now
-	_, err = s.Pool.SaveResource(res)
+	_, err = s.Pool.SaveClient(types.Resource{ID: id, PoolID: poolID}, client)
 	if err != nil {
 		return err
 	}

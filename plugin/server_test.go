@@ -192,13 +192,6 @@ func makeResource() types.Resource {
 		Meta:        makeMeta(),
 		State:       types.ResourcePending,
 		StateChange: time.Now().Truncate(time.Millisecond),
-		Clients: []types.Client{
-			{
-				ID:        strconv.Itoa(rand.Int()),
-				Heartbeat: time.Now().Truncate(time.Millisecond),
-				Meta:      makeMeta(),
-			},
-		},
 	}
 }
 
