@@ -51,8 +51,6 @@ func (s *Service) RequestResource(poolID string, client types.Client) (res types
 	}
 
 	if _, ok := pool.Resources[res.ID]; !ok {
-		res.PoolID = pool.ID
-		res, err = s.Pool.SaveResource(res)
 		event.Meta = types.Meta{
 			"type":   "created",
 			"client": client,
@@ -62,6 +60,10 @@ func (s *Service) RequestResource(poolID string, client types.Client) (res types
 			"type":   "requested",
 			"client": client,
 		}
+	}
+	res.PoolID = pool.ID
+	if res, err = s.Pool.SaveResource(res); err != nil {
+		return types.Resource{}, err
 	}
 	if err := s.Pool.AppendEvent(event); err != nil {
 		return types.Resource{}, err
