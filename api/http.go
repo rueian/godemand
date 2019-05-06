@@ -11,6 +11,9 @@ import (
 
 func NewHTTPMux(s types.Service) *http.ServeMux {
 	mux := &http.ServeMux{}
+	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Write([]byte("ok"))
+	})
 	mux.HandleFunc("/RequestResource", func(writer http.ResponseWriter, request *http.Request) {
 		request.ParseForm()
 
