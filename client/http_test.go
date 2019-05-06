@@ -60,11 +60,17 @@ var _ = Describe("Client", func() {
 		Context("api resource not found", func() {
 			BeforeEach(func() {
 				ctx = context.Background()
-				service.EXPECT().RequestResource(poolID, info).Return(types.Resource{ID: "a", PoolID: poolID}, nil)
-				service.EXPECT().GetResource(poolID, "a").Return(types.Resource{}, api.ResourceNotFoundErr)
+				service.EXPECT().RequestResource(poolID, info).Return(types.Resource{ID: "b", PoolID: poolID}, nil).After(
+					service.EXPECT().RequestResource(poolID, info).Return(types.Resource{ID: "a", PoolID: poolID}, nil),
+				)
+
+				service.EXPECT().GetResource(poolID, "b").Return(types.Resource{ID: "b", PoolID: poolID, State: types.ResourceRunning}, nil).After(
+					service.EXPECT().GetResource(poolID, "a").Return(types.Resource{}, api.ResourceNotFoundErr),
+				)
 			})
-			It("err", func() {
-				Expect(err.Error()).To(ContainSubstring("not found"))
+			It("request resource again", func() {
+				Expect(err).NotTo(HaveOccurred())
+				Expect(res).To(Equal(types.Resource{ID: "b", PoolID: poolID, State: types.ResourceRunning}))
 			})
 		})
 
@@ -96,7 +102,6 @@ var _ = Describe("Client", func() {
 					ctx = context.Background()
 					resource = types.Resource{ID: "a", PoolID: poolID, State: types.ResourceRunning}
 					service.EXPECT().RequestResource(poolID, info).Return(resource, nil)
-					service.EXPECT().Heartbeat(poolID, "a", info).Return(nil)
 				})
 				It("err", func() {
 					Expect(err).NotTo(HaveOccurred())
@@ -113,7 +118,6 @@ var _ = Describe("Client", func() {
 					).After(service.EXPECT().GetResource(poolID, "a").Return(
 						resource, nil,
 					).Times(1))
-					service.EXPECT().Heartbeat(poolID, "a", info).Return(nil)
 				})
 				It("err", func() {
 					Expect(err).NotTo(HaveOccurred())

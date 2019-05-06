@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -28,33 +27,37 @@ type HTTPClient struct {
 	info   types.Client
 }
 
-func (c *HTTPClient) RequestResource(ctx context.Context, poolID string) (resource types.Resource, err error) {
-	res, err := c.postRetry(ctx, "/RequestResource", makeForm(poolID, "", c.info))
-	if err != nil {
-		return types.Resource{}, err
-	}
-	if err = json.Unmarshal(res, &resource); err != nil {
-		return types.Resource{}, err
-	}
+var NotFoundError = xerrors.New("http status 404")
 
+func (c *HTTPClient) RequestResource(ctx context.Context, poolID string) (resource types.Resource, err error) {
 	for {
-		if resource.State != types.ResourceRunning {
-			time.Sleep(5 * time.Second)
-		} else {
-			break
-		}
-		res, err = c.postRetry(ctx, "/GetResource", makeForm(resource.PoolID, resource.ID, c.info))
+		res, err := c.postRetry(ctx, "/RequestResource", makeForm(poolID, "", c.info))
 		if err != nil {
 			return types.Resource{}, err
 		}
-		resource = types.Resource{}
 		if err = json.Unmarshal(res, &resource); err != nil {
 			return types.Resource{}, err
 		}
-	}
 
-	_, err = c.postRetry(ctx, "/Heartbeat", makeForm(resource.PoolID, resource.ID, c.info))
-	return resource, err
+		for {
+			if resource.State == types.ResourceRunning {
+				return resource, err
+			} else {
+				time.Sleep(5 * time.Second)
+			}
+			res, err = c.postRetry(ctx, "/GetResource", makeForm(resource.PoolID, resource.ID, c.info))
+			if xerrors.Is(err, NotFoundError) {
+				break
+			}
+			if err != nil {
+				return types.Resource{}, err
+			}
+			resource = types.Resource{}
+			if err = json.Unmarshal(res, &resource); err != nil {
+				return types.Resource{}, err
+			}
+		}
+	}
 }
 
 func (c *HTTPClient) Heartbeat(ctx context.Context, resource types.Resource) (err error) {
@@ -85,7 +88,7 @@ func (c *HTTPClient) postRetry(ctx context.Context, endpoint string, form url.Va
 				return res, nil
 			}
 			if resp.StatusCode == 404 {
-				return nil, errors.New(string(res))
+				return nil, xerrors.Errorf("%s: %w", string(res), NotFoundError)
 			}
 		}
 		if len(res) > 0 {
