@@ -147,7 +147,7 @@ var _ = Describe("Service", func() {
 					Expect(err).NotTo(HaveOccurred())
 				})
 				It("got res", func() {
-					Expect(res).To(Equal(types.Resource{ID: "a", PoolID: poolID}))
+					Expect(res).To(Equal(types.Resource{ID: "a", PoolID: poolID, Clients: map[string]types.Client{}}))
 				})
 				It("append requested events", func() {
 					events, err := pool.GetEventsByPool(poolID, 1, time.Now())
