@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"log"
 	"sync"
 	"time"
 
@@ -122,6 +123,8 @@ func (s *InMemoryResourcePool) DeleteClients(resource types.Resource, clients []
 func (s *InMemoryResourcePool) AppendEvent(event types.ResourceEvent) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	log.Printf("Event: pool=%s id=%s meta=%v \n", event.ResourcePoolID, event.ResourceID, event.Meta)
 	events, ok := s.events[event.ResourcePoolID]
 	if !ok {
 		events = make([]types.ResourceEvent, 1)

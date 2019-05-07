@@ -103,6 +103,13 @@ var _ = Describe("InMemoryResourcePool", func() {
 					ResourceID:     "a",
 					ResourcePoolID: DefaultPool,
 					Timestamp:      time.Now(),
+					Meta: map[string]interface{}{
+						"type":  "state",
+						"prev":  types.ResourceRunning,
+						"next":  types.ResourceTerminating,
+						"since": time.Now(),
+						"taken": 0,
+					},
 				})
 				Expect(err).NotTo(HaveOccurred())
 			}
