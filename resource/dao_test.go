@@ -75,6 +75,7 @@ var _ = Describe("InMemoryResourcePool", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(pool.Resources[res.ID].Clients[client.ID].Meta).To(Equal(client.Meta))
 			Expect(pool.Resources[res.ID].Clients[client.ID].Heartbeat).NotTo(BeZero())
+			Expect(pool.Resources[res.ID].LastClientHeartbeat).NotTo(BeZero())
 		})
 	})
 

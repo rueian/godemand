@@ -96,6 +96,8 @@ func (s *InMemoryResourcePool) SaveClient(resource types.Resource, client types.
 	current.Clients[client.ID] = client
 	current.LastClientHeartbeat = now
 
+	pool.Resources[resource.ID] = current
+
 	return client, nil
 }
 
