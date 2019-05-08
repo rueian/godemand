@@ -53,6 +53,19 @@ func (s *ResourceSyncer) Run(ctx context.Context, workers int) error {
 					if _, err = s.Pool.SaveResource(ret); err != nil {
 						break
 					}
+					if ret.State == types.ResourceDeleted {
+						if err = s.Pool.DeleteResource(ret); err == nil {
+							err = s.Pool.AppendEvent(types.ResourceEvent{
+								ResourcePoolID: ret.PoolID,
+								ResourceID:     ret.ID,
+								Timestamp:      time.Now(),
+								Meta: map[string]interface{}{
+									"type": "deleted",
+								},
+							})
+						}
+						break
+					}
 					if ret.State == res.State {
 						break
 					}

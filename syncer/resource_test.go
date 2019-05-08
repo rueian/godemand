@@ -96,12 +96,13 @@ var _ = Describe("Syncer", func() {
 			})
 		})
 		Context("call SyncResource multiple times if state change", func() {
+			var alter types.Resource
 			BeforeEach(func() {
 				ctx, cancel = context.WithCancel(context.Background())
 				launchpad.EXPECT().GetController("plugin1").Return(controller, nil)
 				locker.EXPECT().AcquireLock(res.ID).Return("lockID", nil)
 				locker.EXPECT().ReleaseLock(res.ID, "lockID").Return(nil)
-				alter := res
+				alter = res
 				alter.State = types.ResourceRunning
 				controller.EXPECT().SyncResource(gomock.Any(), cfg.Pools["pool1"].Params).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
 					if res.State != alter.State || res.StateChange.IsZero() {
@@ -113,8 +114,32 @@ var _ = Describe("Syncer", func() {
 					controller.EXPECT().SyncResource(res, cfg.Pools["pool1"].Params).Return(alter, nil),
 				)
 			})
+			It("call SyncResource, and save result with state change", func() {
+				Expect(err).To(Equal(context.Canceled))
+				p, err := pool.GetResources("pool1")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(p.Resources).To(HaveKey(alter.ID))
+				Expect(p.Resources[alter.ID].StateChange).NotTo(BeZero())
+				Expect(p.Resources[alter.ID].State).To(Equal(types.ResourceRunning))
+			})
+		})
+		Context("call SyncResource and delete resource if StopSyncAt is set", func() {
+			BeforeEach(func() {
+				ctx, cancel = context.WithCancel(context.Background())
+				launchpad.EXPECT().GetController("plugin1").Return(controller, nil)
+				locker.EXPECT().AcquireLock(res.ID).Return("lockID", nil)
+				locker.EXPECT().ReleaseLock(res.ID, "lockID").Return(nil)
+				res2 := res
+				res2.State = types.ResourceDeleted
+				controller.EXPECT().SyncResource(res, cfg.Pools["pool1"].Params).Return(res2, nil).Do(func(interface{}, interface{}) {
+					cancel()
+				})
+			})
 			It("call SyncResource", func() {
 				Expect(err).To(Equal(context.Canceled))
+				p, err := pool.GetResources("pool1")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(p.Resources).NotTo(HaveKey(res.ID))
 			})
 		})
 		Context("plugin error", func() {
