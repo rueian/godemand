@@ -11,7 +11,7 @@ import (
 var ResourceNotFoundErr = xerrors.New("resource not found in pool")
 
 type Service struct {
-	Pool      types.ResourcePoolDAO
+	Pool      types.ResourceDAO
 	Locker    types.Locker
 	Launchpad types.Launchpad
 	Config    *config.Config

@@ -9,7 +9,7 @@ import (
 )
 
 type ResourceSyncer struct {
-	Pool      types.ResourcePoolDAO
+	Pool      types.ResourceDAO
 	Locker    types.Locker
 	Launchpad types.Launchpad
 	Config    *config.Config

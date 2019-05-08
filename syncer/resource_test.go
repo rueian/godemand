@@ -19,7 +19,7 @@ var _ = Describe("Syncer", func() {
 	var syncer *ResourceSyncer
 	var launchpad *mock.MockLaunchpad
 	var controller *mock.MockController
-	var pool types.ResourcePoolDAO
+	var pool types.ResourceDAO
 	var locker *mock.MockLocker
 	var ctrl *gomock.Controller
 	var cfg *config.Config

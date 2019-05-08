@@ -47,7 +47,7 @@ type Client struct {
 
 type Meta map[string]interface{}
 
-type ResourcePoolDAO interface {
+type ResourceDAO interface {
 	GetResources(id string) (ResourcePool, error)
 	SaveResource(resource Resource) (Resource, error)
 	DeleteResource(resource Resource) error
