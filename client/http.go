@@ -40,7 +40,7 @@ func (c *HTTPClient) RequestResource(ctx context.Context, poolID string) (resour
 		}
 
 		for {
-			if resource.State == types.ResourceRunning {
+			if resource.State == types.ResourceServing {
 				return resource, err
 			} else {
 				time.Sleep(5 * time.Second)

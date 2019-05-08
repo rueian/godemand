@@ -6,8 +6,8 @@ type ResourceState int
 
 const (
 	ResourcePending ResourceState = iota
-	ResourceCreating
-	ResourceRunning
+	ResourceBooting
+	ResourceServing
 	ResourceDeleting
 	ResourceDeleted
 	ResourceTerminating

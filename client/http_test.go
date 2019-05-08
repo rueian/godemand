@@ -64,13 +64,13 @@ var _ = Describe("Client", func() {
 					service.EXPECT().RequestResource(poolID, info).Return(types.Resource{ID: "a", PoolID: poolID}, nil),
 				)
 
-				service.EXPECT().GetResource(poolID, "b").Return(types.Resource{ID: "b", PoolID: poolID, State: types.ResourceRunning}, nil).After(
+				service.EXPECT().GetResource(poolID, "b").Return(types.Resource{ID: "b", PoolID: poolID, State: types.ResourceServing}, nil).After(
 					service.EXPECT().GetResource(poolID, "a").Return(types.Resource{}, api.ResourceNotFoundErr),
 				)
 			})
 			It("request resource again", func() {
 				Expect(err).NotTo(HaveOccurred())
-				Expect(res).To(Equal(types.Resource{ID: "b", PoolID: poolID, State: types.ResourceRunning}))
+				Expect(res).To(Equal(types.Resource{ID: "b", PoolID: poolID, State: types.ResourceServing}))
 			})
 		})
 
@@ -100,7 +100,7 @@ var _ = Describe("Client", func() {
 			Context("with running resource", func() {
 				BeforeEach(func() {
 					ctx = context.Background()
-					resource = types.Resource{ID: "a", PoolID: poolID, State: types.ResourceRunning}
+					resource = types.Resource{ID: "a", PoolID: poolID, State: types.ResourceServing}
 					service.EXPECT().RequestResource(poolID, info).Return(resource, nil)
 				})
 				It("err", func() {
@@ -114,14 +114,14 @@ var _ = Describe("Client", func() {
 					resource = types.Resource{ID: "a", PoolID: poolID}
 					service.EXPECT().RequestResource(poolID, info).Return(resource, nil)
 					service.EXPECT().GetResource(poolID, "a").Return(
-						types.Resource{ID: "a", PoolID: poolID, State: types.ResourceRunning}, nil,
+						types.Resource{ID: "a", PoolID: poolID, State: types.ResourceServing}, nil,
 					).After(service.EXPECT().GetResource(poolID, "a").Return(
 						resource, nil,
 					).Times(1))
 				})
 				It("err", func() {
 					Expect(err).NotTo(HaveOccurred())
-					Expect(res).To(Equal(types.Resource{ID: "a", PoolID: poolID, State: types.ResourceRunning}))
+					Expect(res).To(Equal(types.Resource{ID: "a", PoolID: poolID, State: types.ResourceServing}))
 				})
 			})
 		})

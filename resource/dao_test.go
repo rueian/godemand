@@ -106,7 +106,7 @@ var _ = Describe("InMemoryResourcePool", func() {
 					Timestamp:      time.Now(),
 					Meta: map[string]interface{}{
 						"type":  "state",
-						"prev":  types.ResourceRunning,
+						"prev":  types.ResourceServing,
 						"next":  types.ResourceTerminating,
 						"since": time.Now(),
 						"taken": 0,

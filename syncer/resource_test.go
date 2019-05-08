@@ -103,7 +103,7 @@ var _ = Describe("Syncer", func() {
 				locker.EXPECT().AcquireLock(res.ID).Return("lockID", nil)
 				locker.EXPECT().ReleaseLock(res.ID, "lockID").Return(nil)
 				alter = res
-				alter.State = types.ResourceRunning
+				alter.State = types.ResourceServing
 				controller.EXPECT().SyncResource(gomock.Any(), cfg.Pools["pool1"].Params).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
 					if res.State != alter.State || res.StateChange.IsZero() {
 						return types.Resource{}, errors.New("input not match")
@@ -120,7 +120,7 @@ var _ = Describe("Syncer", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(p.Resources).To(HaveKey(alter.ID))
 				Expect(p.Resources[alter.ID].StateChange).NotTo(BeZero())
-				Expect(p.Resources[alter.ID].State).To(Equal(types.ResourceRunning))
+				Expect(p.Resources[alter.ID].State).To(Equal(types.ResourceServing))
 			})
 		})
 		Context("call SyncResource and delete resource if StopSyncAt is set", func() {
