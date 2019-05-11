@@ -62,6 +62,12 @@ func (s *InMemoryResourcePool) SaveResource(resource types.Resource) (types.Reso
 	}
 	resource.Clients = current.Clients
 	resource.LastClientHeartbeat = current.LastClientHeartbeat
+	if resource.StateChange.IsZero() {
+		resource.StateChange = time.Now()
+	}
+	if current.State != resource.State && current.StateChange == resource.StateChange {
+		resource.StateChange = time.Now()
+	}
 
 	s.pools[resource.PoolID].Resources[resource.ID] = resource
 	return resource, nil

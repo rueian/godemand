@@ -32,12 +32,14 @@ var _ = Describe("InMemoryResourcePool", func() {
 	Describe("SaveResource", func() {
 		It("override the resource", func() {
 			input := types.Resource{ID: "a", PoolID: DefaultPool, Clients: map[string]types.Client{}}
-			res, err := store.SaveResource(input)
+			_, err := store.SaveResource(input)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(res).To(Equal(input))
 			pool, err = store.GetResources(DefaultPool)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(pool.Resources).To(HaveKeyWithValue("a", input))
+			Expect(pool.Resources).To(HaveKey("a"))
+			Expect(pool.Resources["a"].ID).To(Equal("a"))
+			Expect(pool.Resources["a"].PoolID).To(Equal(DefaultPool))
+			Expect(pool.Resources["a"].StateChange).NotTo(BeZero())
 		})
 	})
 

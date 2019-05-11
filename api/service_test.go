@@ -147,7 +147,7 @@ var _ = Describe("Service", func() {
 					Expect(err).NotTo(HaveOccurred())
 				})
 				It("got res", func() {
-					Expect(res).To(Equal(types.Resource{ID: "a", PoolID: poolID, Clients: map[string]types.Client{}}))
+					Expect(res.ID).To(Equal("a"))
 				})
 				It("append requested events", func() {
 					events, err := pool.GetEventsByPool(poolID, 1, time.Now())
@@ -168,7 +168,7 @@ var _ = Describe("Service", func() {
 					Expect(err).NotTo(HaveOccurred())
 				})
 				It("got res", func() {
-					Expect(res).To(Equal(types.Resource{ID: "b", PoolID: poolID, Clients: map[string]types.Client{}}))
+					Expect(res.ID).To(Equal("b"))
 				})
 				It("append requested events", func() {
 					events, err := pool.GetEventsByPool(poolID, 1, time.Now())
@@ -181,7 +181,7 @@ var _ = Describe("Service", func() {
 				})
 				It("save the resource", func() {
 					p, _ := pool.GetResources(poolID)
-					Expect(p.Resources).To(HaveKeyWithValue("b", types.Resource{ID: "b", PoolID: poolID, Clients: map[string]types.Client{}}))
+					Expect(p.Resources).To(HaveKey("b"))
 				})
 			})
 		})
@@ -198,7 +198,7 @@ var _ = Describe("Service", func() {
 			})
 			It("get res", func() {
 				Expect(err).NotTo(HaveOccurred())
-				Expect(res).To(Equal(types.Resource{ID: "a", PoolID: poolID, Clients: map[string]types.Client{}}))
+				Expect(res.ID).To(Equal("a"))
 			})
 		})
 

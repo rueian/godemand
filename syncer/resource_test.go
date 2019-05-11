@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -46,10 +47,11 @@ var _ = Describe("Syncer", func() {
 			},
 		}
 		res = types.Resource{
-			ID:      "a",
-			PoolID:  "pool1",
-			Meta:    map[string]interface{}{},
-			Clients: map[string]types.Client{},
+			ID:          "a",
+			PoolID:      "pool1",
+			Meta:        map[string]interface{}{},
+			Clients:     map[string]types.Client{},
+			StateChange: time.Now(),
 		}
 		pool.SaveResource(res)
 	})
