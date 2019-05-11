@@ -1,8 +1,6 @@
 package plugin
 
 import (
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"golang.org/x/xerrors"
@@ -64,8 +62,3 @@ var _ = Describe("InMemoryLocker", func() {
 		})
 	})
 })
-
-func TestInMemoryLocker(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "InMemoryLocker Suite")
-}

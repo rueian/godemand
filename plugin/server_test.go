@@ -135,19 +135,22 @@ var _ = Describe("Serve", func() {
 	var cancel context.CancelFunc
 	var doneCh chan error
 
-	JustBeforeEach(func() {
+	BeforeEach(func() {
 		doneCh = make(chan error)
 		ctrl = gomock.NewController(GinkgoT())
 		controller = mock.NewMockController(ctrl)
 		ctx, cancel = context.WithCancel(context.Background())
-		go func() {
-			doneCh <- Serve(ctx, controller)
-			close(doneCh)
-		}()
 	})
 
 	AfterEach(func() {
+		ctrl.Finish()
 		cancel()
+	})
+
+	JustBeforeEach(func() {
+		go func() {
+			doneCh <- Serve(ctx, controller)
+		}()
 	})
 
 	It("start server", func() {
