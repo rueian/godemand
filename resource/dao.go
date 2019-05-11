@@ -41,7 +41,11 @@ func (s *InMemoryResourcePool) GetResources(id string) (types.ResourcePool, erro
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if pool, ok := s.pools[id]; ok {
-		return pool, nil
+		cp := map[string]types.Resource{}
+		for k, v := range pool.Resources {
+			cp[k] = v
+		}
+		return types.ResourcePool{ID: id, Resources: cp}, nil
 	}
 	return types.ResourcePool{ID: id, Resources: map[string]types.Resource{}}, nil
 }

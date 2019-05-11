@@ -90,8 +90,8 @@ func (l *Launcher) Launch() (types.Controller, error) {
 	}()
 	go func() {
 		if err := cmd.Wait(); err != nil {
-			l.doneCh <- err
 			l.logger.Println(l.CmdParam.Name + ": " + err.Error())
+			l.doneCh <- err
 		}
 		close(l.doneCh)
 	}()
