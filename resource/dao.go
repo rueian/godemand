@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"encoding/json"
 	"log"
 	"sync"
 	"time"
@@ -41,11 +42,7 @@ func (s *InMemoryResourcePool) GetResources(id string) (types.ResourcePool, erro
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if pool, ok := s.pools[id]; ok {
-		cp := map[string]types.Resource{}
-		for k, v := range pool.Resources {
-			cp[k] = v
-		}
-		return types.ResourcePool{ID: id, Resources: cp}, nil
+		return copyPool(pool)
 	}
 	return types.ResourcePool{ID: id, Resources: map[string]types.Resource{}}, nil
 }
@@ -53,28 +50,35 @@ func (s *InMemoryResourcePool) GetResources(id string) (types.ResourcePool, erro
 func (s *InMemoryResourcePool) SaveResource(resource types.Resource) (types.Resource, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if _, ok := s.pools[resource.PoolID]; !ok {
-		s.pools[resource.PoolID] = types.ResourcePool{ID: resource.PoolID, Resources: map[string]types.Resource{}}
+
+	cp, err := copyResource(resource)
+	if err != nil {
+		return types.Resource{}, err
 	}
 
-	current, ok := s.pools[resource.PoolID].Resources[resource.ID]
+	if _, ok := s.pools[cp.PoolID]; !ok {
+		s.pools[cp.PoolID] = types.ResourcePool{ID: cp.PoolID, Resources: map[string]types.Resource{}}
+	}
+
+	current, ok := s.pools[cp.PoolID].Resources[cp.ID]
 	if !ok {
 		current = types.Resource{}
 	}
 	if current.Clients == nil {
 		current.Clients = map[string]types.Client{}
 	}
-	resource.Clients = current.Clients
-	resource.LastClientHeartbeat = current.LastClientHeartbeat
-	if resource.StateChange.IsZero() {
-		resource.StateChange = time.Now()
+
+	cp.Clients = current.Clients
+	cp.LastClientHeartbeat = current.LastClientHeartbeat
+	if cp.StateChange.IsZero() {
+		cp.StateChange = time.Now()
 	}
-	if current.State != resource.State && current.StateChange == resource.StateChange {
-		resource.StateChange = time.Now()
+	if current.State != cp.State && current.StateChange == cp.StateChange {
+		cp.StateChange = time.Now()
 	}
 
-	s.pools[resource.PoolID].Resources[resource.ID] = resource
-	return resource, nil
+	s.pools[cp.PoolID].Resources[cp.ID] = cp
+	return cp, nil
 }
 
 func (s *InMemoryResourcePool) DeleteResource(resource types.Resource) error {
@@ -186,4 +190,22 @@ func (s *InMemoryResourcePool) GetEventsByResource(poolID, id string, limit int,
 		}
 	}
 	return result, nil
+}
+
+func copyPool(pool types.ResourcePool) (out types.ResourcePool, err error) {
+	bs, err := json.Marshal(pool)
+	if err != nil {
+		return out, err
+	}
+	err = json.Unmarshal(bs, &out)
+	return out, err
+}
+
+func copyResource(pool types.Resource) (out types.Resource, err error) {
+	bs, err := json.Marshal(pool)
+	if err != nil {
+		return out, err
+	}
+	err = json.Unmarshal(bs, &out)
+	return out, err
 }

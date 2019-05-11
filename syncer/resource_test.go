@@ -51,7 +51,7 @@ var _ = Describe("Syncer", func() {
 			PoolID:      "pool1",
 			Meta:        map[string]interface{}{},
 			Clients:     map[string]types.Client{},
-			StateChange: time.Now(),
+			StateChange: time.Now().Truncate(time.Second),
 		}
 		pool.SaveResource(res)
 	})
