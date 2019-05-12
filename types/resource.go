@@ -27,6 +27,7 @@ type Resource struct {
 	Meta                Meta
 	State               ResourceState
 	StateChange         time.Time
+	CreatedAt           time.Time
 	LastSynced          time.Time
 	LastClientHeartbeat time.Time
 	Clients             map[string]Client

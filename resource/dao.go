@@ -70,6 +70,9 @@ func (s *InMemoryResourcePool) SaveResource(resource types.Resource) (types.Reso
 
 	cp.Clients = current.Clients
 	cp.LastClientHeartbeat = current.LastClientHeartbeat
+	if cp.CreatedAt.IsZero() {
+		cp.CreatedAt = time.Now()
+	}
 	if cp.StateChange.IsZero() {
 		cp.StateChange = time.Now()
 	}
