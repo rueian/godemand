@@ -81,7 +81,7 @@ func (s *InMemoryResourcePool) SaveResource(resource types.Resource) (types.Reso
 	}
 
 	s.pools[cp.PoolID].Resources[cp.ID] = cp
-	return cp, nil
+	return copyResource(cp)
 }
 
 func (s *InMemoryResourcePool) DeleteResource(resource types.Resource) error {
@@ -107,15 +107,20 @@ func (s *InMemoryResourcePool) SaveClient(resource types.Resource, client types.
 		return types.Client{}, nil
 	}
 
-	now := time.Now()
-	client.Heartbeat = now
+	cp, err := copyClient(client)
+	if err != nil {
+		return types.Client{}, err
+	}
 
-	current.Clients[client.ID] = client
+	now := time.Now()
+	cp.Heartbeat = now
+
+	current.Clients[client.ID] = cp
 	current.LastClientHeartbeat = now
 
 	pool.Resources[resource.ID] = current
 
-	return client, nil
+	return copyClient(cp)
 }
 
 func (s *InMemoryResourcePool) DeleteClients(resource types.Resource, clients []types.Client) error {
@@ -195,20 +200,26 @@ func (s *InMemoryResourcePool) GetEventsByResource(poolID, id string, limit int,
 	return result, nil
 }
 
-func copyPool(pool types.ResourcePool) (out types.ResourcePool, err error) {
-	bs, err := json.Marshal(pool)
-	if err != nil {
-		return out, err
+func copyClient(client types.Client) (out types.Client, err error) {
+	bs, err := json.Marshal(client)
+	if err == nil {
+		err = json.Unmarshal(bs, &out)
 	}
-	err = json.Unmarshal(bs, &out)
 	return out, err
 }
 
-func copyResource(pool types.Resource) (out types.Resource, err error) {
+func copyPool(pool types.ResourcePool) (out types.ResourcePool, err error) {
 	bs, err := json.Marshal(pool)
-	if err != nil {
-		return out, err
+	if err == nil {
+		err = json.Unmarshal(bs, &out)
 	}
-	err = json.Unmarshal(bs, &out)
+	return out, err
+}
+
+func copyResource(resource types.Resource) (out types.Resource, err error) {
+	bs, err := json.Marshal(resource)
+	if err == nil {
+		err = json.Unmarshal(bs, &out)
+	}
 	return out, err
 }
