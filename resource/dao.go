@@ -70,15 +70,6 @@ func (s *InMemoryResourcePool) SaveResource(resource types.Resource) (types.Reso
 
 	cp.Clients = current.Clients
 	cp.LastClientHeartbeat = current.LastClientHeartbeat
-	if cp.CreatedAt.IsZero() {
-		cp.CreatedAt = time.Now()
-	}
-	if cp.StateChange.IsZero() {
-		cp.StateChange = time.Now()
-	}
-	if current.State != cp.State && current.StateChange == cp.StateChange {
-		cp.StateChange = time.Now()
-	}
 
 	s.pools[cp.PoolID].Resources[cp.ID] = cp
 	return copyResource(cp)
@@ -112,11 +103,8 @@ func (s *InMemoryResourcePool) SaveClient(resource types.Resource, client types.
 		return types.Client{}, err
 	}
 
-	now := time.Now()
-	cp.Heartbeat = now
-
 	current.Clients[client.ID] = cp
-	current.LastClientHeartbeat = now
+	current.LastClientHeartbeat = cp.Heartbeat
 
 	pool.Resources[resource.ID] = current
 

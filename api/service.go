@@ -55,6 +55,8 @@ func (s *Service) RequestResource(poolID string, client types.Client) (res types
 			"type":   "created",
 			"client": client,
 		}
+		res.CreatedAt = time.Now()
+		res.StateChange = time.Now()
 	} else {
 		event.Meta = types.Meta{
 			"type":   "requested",
@@ -62,6 +64,9 @@ func (s *Service) RequestResource(poolID string, client types.Client) (res types
 		}
 	}
 	res.PoolID = pool.ID
+	if pool.Resources[res.ID].State != res.State && pool.Resources[res.ID].StateChange == res.StateChange {
+		res.StateChange = time.Now()
+	}
 	if res, err = s.Pool.SaveResource(res); err != nil {
 		return types.Resource{}, err
 	}
@@ -86,6 +91,7 @@ func (s *Service) GetResource(poolID, id string) (res types.Resource, err error)
 }
 
 func (s *Service) Heartbeat(poolID, id string, client types.Client) (err error) {
+	client.Heartbeat = time.Now()
 	_, err = s.Pool.SaveClient(types.Resource{ID: id, PoolID: poolID}, client)
 	if err != nil {
 		return err

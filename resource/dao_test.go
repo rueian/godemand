@@ -39,7 +39,6 @@ var _ = Describe("InMemoryResourcePool", func() {
 			Expect(pool.Resources).To(HaveKey("a"))
 			Expect(pool.Resources["a"].ID).To(Equal("a"))
 			Expect(pool.Resources["a"].PoolID).To(Equal(DefaultPool))
-			Expect(pool.Resources["a"].StateChange).NotTo(BeZero())
 		})
 	})
 
@@ -69,7 +68,7 @@ var _ = Describe("InMemoryResourcePool", func() {
 			_, err := store.SaveResource(res)
 			Expect(err).NotTo(HaveOccurred())
 
-			client := types.Client{ID: "a", Meta: map[string]interface{}{"a": "a"}}
+			client := types.Client{ID: "a", Heartbeat: time.Now(), Meta: map[string]interface{}{"a": "a"}}
 			_, err = store.SaveClient(res, client)
 			Expect(err).NotTo(HaveOccurred())
 
@@ -77,7 +76,7 @@ var _ = Describe("InMemoryResourcePool", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(pool.Resources[res.ID].Clients[client.ID].Meta).To(Equal(client.Meta))
 			Expect(pool.Resources[res.ID].Clients[client.ID].Heartbeat).NotTo(BeZero())
-			Expect(pool.Resources[res.ID].LastClientHeartbeat).NotTo(BeZero())
+			Expect(pool.Resources[res.ID].LastClientHeartbeat).To(Equal(pool.Resources[res.ID].Clients[client.ID].Heartbeat))
 		})
 	})
 
