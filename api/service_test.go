@@ -204,7 +204,7 @@ var _ = Describe("Service", func() {
 
 		Context("not found", func() {
 			It("got err", func() {
-				Expect(err.Error()).To(ContainSubstring("not found"))
+				Expect(xerrors.Is(err, ResourceNotFoundErr)).To(BeTrue())
 			})
 		})
 	})
@@ -214,27 +214,38 @@ var _ = Describe("Service", func() {
 
 		BeforeEach(func() {
 			resID = "a"
-			pool.SaveResource(types.Resource{ID: "a", PoolID: poolID})
+			pool.SaveResource(types.Resource{ID: resID, PoolID: poolID})
 		})
 
 		JustBeforeEach(func() {
 			err = service.Heartbeat(poolID, resID, client)
 		})
 
+		Context("not found", func() {
+			BeforeEach(func() {
+				resID = "b"
+			})
+			It("get err", func() {
+				Expect(xerrors.Is(err, ResourceNotFoundErr)).To(BeTrue())
+			})
+		})
+
 		Context("first heartbeat", func() {
 			It("append client to resource", func() {
+				Expect(err).NotTo(HaveOccurred())
 				p, _ := pool.GetResources(poolID)
 				res := p.Resources[resID]
 				Expect(res.Clients).To(HaveLen(1))
 				Expect(res.Clients[client.ID].Meta).To(Equal(client.Meta))
 				Expect(res.Clients[client.ID].Heartbeat).NotTo(BeZero())
+				Expect(res.Clients[client.ID].CreatedAt).NotTo(BeZero())
 			})
 		})
 
 		Context("second heartbeat", func() {
 			var firstTime time.Time
 			BeforeEach(func() {
-				res := types.Resource{ID: "a", PoolID: poolID}
+				res := types.Resource{ID: resID, PoolID: poolID}
 				_, err := pool.SaveResource(res)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -242,11 +253,13 @@ var _ = Describe("Service", func() {
 				firstTime = c.Heartbeat
 			})
 			It("append client to resource", func() {
+				Expect(err).NotTo(HaveOccurred())
 				p, _ := pool.GetResources(poolID)
 				res := p.Resources[resID]
 				Expect(res.Clients).To(HaveLen(1))
 				Expect(res.Clients[client.ID].Meta).To(Equal(client.Meta))
 				Expect(res.Clients[client.ID].Heartbeat.After(firstTime)).To(BeTrue())
+				Expect(res.Clients[client.ID].CreatedAt.Before(res.Clients[client.ID].Heartbeat)).To(BeTrue())
 			})
 		})
 	})

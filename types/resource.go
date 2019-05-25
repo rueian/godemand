@@ -42,6 +42,7 @@ type ResourceEvent struct {
 
 type Client struct {
 	ID        string
+	CreatedAt time.Time
 	Heartbeat time.Time
 	Meta      Meta
 }

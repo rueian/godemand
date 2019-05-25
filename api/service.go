@@ -91,9 +91,25 @@ func (s *Service) GetResource(poolID, id string) (res types.Resource, err error)
 }
 
 func (s *Service) Heartbeat(poolID, id string, client types.Client) (err error) {
-	client.Heartbeat = time.Now()
-	_, err = s.Pool.SaveClient(types.Resource{ID: id, PoolID: poolID}, client)
+	pool, err := s.Pool.GetResources(poolID)
 	if err != nil {
+		return err
+	}
+
+	res, ok := pool.Resources[id]
+	if !ok {
+		return xerrors.Errorf("resource %q not found in pool %q: %w", id, poolID, ResourceNotFoundErr)
+	}
+
+	now := time.Now()
+	if c, ok := res.Clients[client.ID]; ok {
+		client.CreatedAt = c.CreatedAt
+	} else {
+		client.CreatedAt = now
+	}
+
+	client.Heartbeat = now
+	if _, err = s.Pool.SaveClient(types.Resource{ID: id, PoolID: poolID}, client); err != nil {
 		return err
 	}
 
