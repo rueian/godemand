@@ -22,14 +22,17 @@ func NewHTTPClient(host string, info types.Client, client *http.Client) *HTTPCli
 }
 
 type HTTPClient struct {
-	host   string
-	client *http.Client
-	info   types.Client
+	host      string
+	client    *http.Client
+	info      types.Client
+	requestAt time.Time
+	servedAt  time.Time
 }
 
 var NotFoundError = xerrors.New("http status 404")
 
 func (c *HTTPClient) RequestResource(ctx context.Context, poolID string) (resource types.Resource, err error) {
+	c.requestAt = time.Now()
 	for {
 		res, err := c.postRetry(ctx, "/RequestResource", makeForm(poolID, "", c.info))
 		if err != nil {
@@ -41,6 +44,7 @@ func (c *HTTPClient) RequestResource(ctx context.Context, poolID string) (resour
 
 		for {
 			if resource.State == types.ResourceServing {
+				c.servedAt = time.Now()
 				return resource, err
 			} else {
 				time.Sleep(5 * time.Second)
@@ -61,6 +65,11 @@ func (c *HTTPClient) RequestResource(ctx context.Context, poolID string) (resour
 }
 
 func (c *HTTPClient) Heartbeat(ctx context.Context, resource types.Resource) (err error) {
+	if c.info.Meta != nil {
+		c.info.Meta["requestAt"] = c.requestAt
+		c.info.Meta["servedAt"] = c.servedAt
+	}
+
 	_, err = c.postRetry(ctx, "/Heartbeat", makeForm(resource.PoolID, resource.ID, c.info))
 	return err
 }
