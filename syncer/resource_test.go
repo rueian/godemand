@@ -47,10 +47,18 @@ var _ = Describe("Syncer", func() {
 			},
 		}
 		res = types.Resource{
-			ID:          "a",
-			PoolID:      "pool1",
-			Meta:        map[string]interface{}{},
-			Clients:     map[string]types.Client{},
+			ID:     "a",
+			PoolID: "pool1",
+			Meta:   map[string]interface{}{},
+			Clients: map[string]types.Client{
+				"client1": {
+					ID: "client1",
+					Meta: map[string]interface{}{
+						"requestAt": time.Now().Truncate(time.Second),
+						"servedAt":  time.Now().Truncate(time.Second),
+					},
+				},
+			},
 			StateChange: time.Now().Truncate(time.Second),
 			CreatedAt:   time.Now().Truncate(time.Second),
 		}

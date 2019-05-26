@@ -16,6 +16,42 @@ const (
 	ResourceError
 )
 
+func (s ResourceState) String() string {
+	switch s {
+	case ResourcePending:
+		return "pending"
+	case ResourceBooting:
+		return "booting"
+	case ResourceServing:
+		return "serving"
+	case ResourceDeleting:
+		return "deleting"
+	case ResourceDeleted:
+		return "deleted"
+	case ResourceTerminating:
+		return "terminating"
+	case ResourceTerminated:
+		return "terminated"
+	case ResourceUnknown:
+		return "unknown"
+	case ResourceError:
+		return "error"
+	}
+	return "unknown"
+}
+
+var ResourceStates = []ResourceState{
+	ResourcePending,
+	ResourceBooting,
+	ResourceServing,
+	ResourceDeleting,
+	ResourceDeleted,
+	ResourceTerminating,
+	ResourceTerminated,
+	ResourceUnknown,
+	ResourceError,
+}
+
 type ResourcePool struct {
 	ID        string
 	Resources map[string]Resource

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rueian/godemand/config"
+	"github.com/rueian/godemand/metrics"
 	"github.com/rueian/godemand/types"
 )
 
@@ -116,10 +117,42 @@ func (s *ResourceSyncer) Run(ctx context.Context, workers int) error {
 			for _, res := range pool.Resources {
 				s.queue <- res
 			}
+
+			// record metrics
+			sc := stateCounter()
+			clients := 0
+			for _, res := range pool.Resources {
+				sc[res.State.String()]++
+				clients += len(res.Clients)
+				metrics.RecordResourceLife(res.PoolID, res.State.String(), res.ID, time.Since(res.StateChange))
+				for _, c := range res.Clients {
+					metrics.RecordClientLife(res.PoolID, c.ID, c.Heartbeat.Sub(c.CreatedAt))
+					if rt, ok := c.Meta["requestAt"]; ok {
+						rt := rt.(time.Time)
+						ut := time.Now()
+						if st, ok := c.Meta["servedAt"]; ok {
+							ut = st.(time.Time)
+						}
+						metrics.RecordClientWait(res.PoolID, c.ID, rt.Sub(ut))
+					}
+				}
+			}
+			for state, count := range sc {
+				metrics.RecordResourceCount(id, state, count)
+			}
+			metrics.RecordClientCount(id, int64(clients))
 		}
 
 		if time.Since(begin) < time.Second {
 			time.Sleep(time.Second)
 		}
 	}
+}
+
+func stateCounter() map[string]int64 {
+	counter := make(map[string]int64)
+	for _, s := range types.ResourceStates {
+		counter[s.String()] = 0
+	}
+	return counter
 }
