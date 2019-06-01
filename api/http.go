@@ -87,7 +87,7 @@ func handleClient(w http.ResponseWriter, input string) (client types.Client, ok 
 func handleErr(w http.ResponseWriter, err error) bool {
 	if xerrors.Is(err, plugin.AcquireLaterErr) {
 		w.WriteHeader(429)
-	} else if xerrors.Is(err, ResourceNotFoundErr) {
+	} else if xerrors.Is(err, types.ResourceNotFoundErr) {
 		w.WriteHeader(404)
 	} else if err != nil {
 		w.WriteHeader(500)

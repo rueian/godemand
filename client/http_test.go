@@ -65,7 +65,7 @@ var _ = Describe("Client", func() {
 				)
 
 				service.EXPECT().GetResource(poolID, "b").Return(types.Resource{ID: "b", PoolID: poolID, State: types.ResourceServing}, nil).After(
-					service.EXPECT().GetResource(poolID, "a").Return(types.Resource{}, api.ResourceNotFoundErr),
+					service.EXPECT().GetResource(poolID, "a").Return(types.Resource{}, types.ResourceNotFoundErr),
 				)
 			})
 			It("request resource again", func() {

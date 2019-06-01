@@ -204,7 +204,7 @@ var _ = Describe("Service", func() {
 
 		Context("not found", func() {
 			It("got err", func() {
-				Expect(xerrors.Is(err, ResourceNotFoundErr)).To(BeTrue())
+				Expect(xerrors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
 			})
 		})
 	})
@@ -226,7 +226,7 @@ var _ = Describe("Service", func() {
 				resID = "b"
 			})
 			It("get err", func() {
-				Expect(xerrors.Is(err, ResourceNotFoundErr)).To(BeTrue())
+				Expect(xerrors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
 			})
 		})
 

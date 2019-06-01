@@ -1,6 +1,10 @@
 package types
 
-import "time"
+import (
+	"time"
+
+	"golang.org/x/xerrors"
+)
 
 type ResourceState int
 
@@ -86,6 +90,7 @@ type Client struct {
 type Meta map[string]interface{}
 
 type ResourceDAO interface {
+	GetResource(pool, id string) (Resource, error)
 	GetResources(id string) (ResourcePool, error)
 	SaveResource(resource Resource) (Resource, error)
 	DeleteResource(resource Resource) error
@@ -95,3 +100,5 @@ type ResourceDAO interface {
 	GetEventsByPool(id string, limit int, before time.Time) ([]ResourceEvent, error)
 	GetEventsByResource(poolID, id string, limit int, before time.Time) ([]ResourceEvent, error)
 }
+
+var ResourceNotFoundErr = xerrors.New("resource not found in pool")

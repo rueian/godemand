@@ -119,7 +119,7 @@ var _ = Describe("NewHTTPMux", func() {
 			})
 
 			for _, c := range []errorCase{
-				makeErrorCase("no res", 404, types.Resource{}, ResourceNotFoundErr),
+				makeErrorCase("no res", 404, types.Resource{}, types.ResourceNotFoundErr),
 				makeErrorCase("other err", 500, types.Resource{}, errors.New("random")),
 			} {
 				func(c errorCase) {
@@ -168,7 +168,7 @@ var _ = Describe("NewHTTPMux", func() {
 			})
 
 			for _, c := range []errorCase{
-				makeErrorCase("no res", 404, ResourceNotFoundErr),
+				makeErrorCase("no res", 404, types.ResourceNotFoundErr),
 				makeErrorCase("lock fail", 429, plugin.AcquireLaterErr),
 				makeErrorCase("other err", 500, errors.New("random")),
 			} {

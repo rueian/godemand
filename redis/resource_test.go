@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/types"
+	"golang.org/x/xerrors"
 )
 
 var _ = Describe("ResourcePool", func() {
@@ -53,6 +54,12 @@ var _ = Describe("ResourcePool", func() {
 					_, err = dao.SaveClient(v, c)
 					Expect(err).NotTo(HaveOccurred())
 				}
+
+				res, err := dao.GetResource(v.PoolID, v.ID)
+				Expect(err).NotTo(HaveOccurred())
+				pj, _ := json.Marshal(res)
+				ps, _ := json.Marshal(v)
+				Expect(pj).To(MatchJSON(ps))
 			}
 
 			for _, d := range deleteClient {
@@ -68,6 +75,16 @@ var _ = Describe("ResourcePool", func() {
 				delete(source.Resources[d[0]].Clients, d[1])
 			}
 
+			for k, v := range source.Resources {
+				v.LastClientHeartbeat = time.Time{}
+				for _, c := range v.Clients {
+					if c.Heartbeat.After(v.LastClientHeartbeat) {
+						v.LastClientHeartbeat = c.Heartbeat
+					}
+				}
+				source.Resources[k] = v
+			}
+
 			for _, d := range deleteResource {
 				err = dao.DeleteResource(types.Resource{
 					ID:     d,
@@ -75,6 +92,9 @@ var _ = Describe("ResourcePool", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 				delete(source.Resources, d)
+
+				_, err := dao.GetResource(id, d)
+				Expect(xerrors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
 			}
 
 			pool, err = dao.GetResources(id)
@@ -114,7 +134,7 @@ var _ = Describe("ResourcePool", func() {
 								Heartbeat: t.Add(10 * time.Minute),
 							},
 						},
-						LastClientHeartbeat: t,
+						LastClientHeartbeat: t.Add(10 * time.Minute),
 					},
 					"2": {
 						ID:      "2",

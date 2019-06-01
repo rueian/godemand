@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/types"
+	"golang.org/x/xerrors"
 )
 
 var _ = Describe("InMemoryResourcePool", func() {
@@ -39,6 +40,11 @@ var _ = Describe("InMemoryResourcePool", func() {
 			Expect(pool.Resources).To(HaveKey("a"))
 			Expect(pool.Resources["a"].ID).To(Equal("a"))
 			Expect(pool.Resources["a"].PoolID).To(Equal(DefaultPool))
+
+			res, err := store.GetResource(DefaultPool, input.ID)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res.ID).To(Equal("a"))
+			Expect(res.PoolID).To(Equal(DefaultPool))
 		})
 	})
 
@@ -59,6 +65,9 @@ var _ = Describe("InMemoryResourcePool", func() {
 			pool, err = store.GetResources(DefaultPool)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(pool.Resources).NotTo(HaveKey(res.ID))
+
+			_, err = store.GetResource(DefaultPool, res.ID)
+			Expect(xerrors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
 		})
 	})
 

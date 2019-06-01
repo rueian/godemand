@@ -54,29 +54,65 @@ func (p *ResourcePool) GetResources(id string) (types.ResourcePool, error) {
 			return types.ResourcePool{}, err
 		}
 
-		cs, err := p.client.HGetAll(clientHashKey(resource)).Result()
+		clients, lastHeartbeat, err := p.getClients(resource)
 		if err != nil {
 			return types.ResourcePool{}, err
 		}
 
-		resource.Clients = make(map[string]types.Client)
-
-		for ck, cv := range cs {
-			var client types.Client
-			if err = json.Unmarshal([]byte(cv), &client); err != nil {
-				return types.ResourcePool{}, err
-			}
-			resource.Clients[ck] = client
-
-			if resource.LastClientHeartbeat.Before(client.Heartbeat) {
-				resource.LastClientHeartbeat = client.Heartbeat
-			}
-		}
+		resource.Clients = clients
+		resource.LastClientHeartbeat = lastHeartbeat
 
 		pool.Resources[k] = resource
 	}
 
 	return pool, nil
+}
+
+func (p *ResourcePool) GetResource(pool, id string) (types.Resource, error) {
+	res, err := p.client.HGet(pool, id).Result()
+	if err != nil {
+		if err == redis.Nil {
+			err = types.ResourceNotFoundErr
+		}
+		return types.Resource{}, err
+	}
+
+	var resource types.Resource
+	if err = json.Unmarshal([]byte(res), &resource); err != nil {
+		return types.Resource{}, err
+	}
+
+	clients, lastHeartbeat, err := p.getClients(resource)
+	if err != nil {
+		return types.Resource{}, err
+	}
+
+	resource.Clients = clients
+	resource.LastClientHeartbeat = lastHeartbeat
+
+	return resource, nil
+}
+
+func (p *ResourcePool) getClients(resource types.Resource) (clients map[string]types.Client, lastHeartbeat time.Time, err error) {
+	cs, err := p.client.HGetAll(clientHashKey(resource)).Result()
+	if err != nil {
+		return nil, time.Time{}, err
+	}
+
+	clients = make(map[string]types.Client)
+
+	for ck, cv := range cs {
+		var client types.Client
+		if err = json.Unmarshal([]byte(cv), &client); err != nil {
+			return nil, time.Time{}, err
+		}
+		clients[ck] = client
+
+		if lastHeartbeat.Before(client.Heartbeat) {
+			lastHeartbeat = client.Heartbeat
+		}
+	}
+	return
 }
 
 func (p *ResourcePool) SaveResource(resource types.Resource) (cp types.Resource, err error) {

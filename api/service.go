@@ -8,8 +8,6 @@ import (
 	"golang.org/x/xerrors"
 )
 
-var ResourceNotFoundErr = xerrors.New("resource not found in pool")
-
 type Service struct {
 	Pool      types.ResourceDAO
 	Locker    types.Locker
@@ -87,18 +85,13 @@ func (s *Service) GetResource(poolID, id string) (res types.Resource, err error)
 		return res, nil
 	}
 
-	return types.Resource{}, xerrors.Errorf("resource %q not found in pool %q: %w", id, poolID, ResourceNotFoundErr)
+	return types.Resource{}, xerrors.Errorf("resource %q not found in pool %q: %w", id, poolID, types.ResourceNotFoundErr)
 }
 
 func (s *Service) Heartbeat(poolID, id string, client types.Client) (err error) {
-	pool, err := s.Pool.GetResources(poolID)
+	res, err := s.Pool.GetResource(poolID, id)
 	if err != nil {
-		return err
-	}
-
-	res, ok := pool.Resources[id]
-	if !ok {
-		return xerrors.Errorf("resource %q not found in pool %q: %w", id, poolID, ResourceNotFoundErr)
+		return xerrors.Errorf("resource %q not found in pool %q: %w", id, poolID, types.ResourceNotFoundErr)
 	}
 
 	now := time.Now()

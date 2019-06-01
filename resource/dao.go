@@ -47,6 +47,17 @@ func (s *InMemoryResourcePool) GetResources(id string) (types.ResourcePool, erro
 	return types.ResourcePool{ID: id, Resources: map[string]types.Resource{}}, nil
 }
 
+func (s *InMemoryResourcePool) GetResource(pool, id string) (types.Resource, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if p, ok := s.pools[pool]; ok {
+		if r, ok := p.Resources[id]; ok {
+			return copyResource(r)
+		}
+	}
+	return types.Resource{}, types.ResourceNotFoundErr
+}
+
 func (s *InMemoryResourcePool) SaveResource(resource types.Resource) (types.Resource, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
