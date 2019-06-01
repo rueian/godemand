@@ -80,6 +80,7 @@ func (p *ResourcePool) GetResources(id string) (types.ResourcePool, error) {
 }
 
 func (p *ResourcePool) SaveResource(resource types.Resource) (cp types.Resource, err error) {
+	versionKey := resourceVersionKey(resource)
 	for {
 		var current types.Resource
 
@@ -113,12 +114,13 @@ func (p *ResourcePool) SaveResource(resource types.Resource) (cp types.Resource,
 			}
 
 			_, err = tx.TxPipelined(func(pipe redis.Pipeliner) error {
+				pipe.Incr(versionKey)
 				pipe.HSet(resource.PoolID, resource.ID, string(v))
 				return nil
 			})
 
 			return err
-		}, resource.PoolID)
+		}, versionKey)
 
 		if err == nil {
 			return current, nil
@@ -134,6 +136,7 @@ func (p *ResourcePool) DeleteResource(resource types.Resource) error {
 	_, err := p.client.TxPipelined(func(pipe redis.Pipeliner) error {
 		pipe.HDel(resource.PoolID, resource.ID)
 		pipe.Del(clientHashKey(resource))
+		pipe.Del(resourceVersionKey(resource))
 		return nil
 	})
 	return err
@@ -241,6 +244,10 @@ func (p *ResourcePool) GetEventsByResource(poolID, id string, limit int, before 
 
 func clientHashKey(resource types.Resource) string {
 	return fmt.Sprintf("%s:%s:clients", resource.PoolID, resource.ID)
+}
+
+func resourceVersionKey(resource types.Resource) string {
+	return fmt.Sprintf("%s:%s:version", resource.PoolID, resource.ID)
 }
 
 func eventListKey(poolID string) string {
