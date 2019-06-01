@@ -38,7 +38,7 @@ type Locker struct {
 
 func (l *Locker) AcquireLock(key string) (id string, err error) {
 	id = strconv.Itoa(rand.Int())
-	ok, err := l.client.SetNX(key, id, l.expiration).Result()
+	ok, err := l.client.SetNX(lockKey(key), id, l.expiration).Result()
 	if err != nil {
 		return "", err
 	}
@@ -49,7 +49,7 @@ func (l *Locker) AcquireLock(key string) (id string, err error) {
 }
 
 func (l *Locker) ReleaseLock(key, id string) error {
-	removed, err := releaseScript.Run(l.client, []string{key}, id).Result()
+	removed, err := releaseScript.Run(l.client, []string{lockKey(key)}, id).Result()
 	if err != nil {
 		return err
 	}
@@ -57,6 +57,10 @@ func (l *Locker) ReleaseLock(key, id string) error {
 		return xerrors.Errorf("fail to release lock by (%s, %s): %w", key, id, plugin.LockNotFoundErr)
 	}
 	return nil
+}
+
+func lockKey(key string) string {
+	return key + ":lock"
 }
 
 var releaseScript = redis.NewScript(`

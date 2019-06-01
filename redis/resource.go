@@ -38,7 +38,7 @@ type ResourcePool struct {
 }
 
 func (p *ResourcePool) GetResources(id string) (types.ResourcePool, error) {
-	res, err := p.client.HGetAll(id).Result()
+	res, err := p.client.HGetAll(poolHashKey(id)).Result()
 	if err != nil {
 		return types.ResourcePool{}, err
 	}
@@ -69,7 +69,7 @@ func (p *ResourcePool) GetResources(id string) (types.ResourcePool, error) {
 }
 
 func (p *ResourcePool) GetResource(pool, id string) (types.Resource, error) {
-	res, err := p.client.HGet(pool, id).Result()
+	res, err := p.client.HGet(poolHashKey(pool), id).Result()
 	if err != nil {
 		if err == redis.Nil {
 			err = types.ResourceNotFoundErr
@@ -121,7 +121,7 @@ func (p *ResourcePool) SaveResource(resource types.Resource) (cp types.Resource,
 		var current types.Resource
 
 		err = p.client.Watch(func(tx *redis.Tx) error {
-			res, err := tx.HGet(resource.PoolID, resource.ID).Result()
+			res, err := tx.HGet(poolHashKey(resource.PoolID), resource.ID).Result()
 
 			if err == redis.Nil {
 				current = resource
@@ -151,7 +151,7 @@ func (p *ResourcePool) SaveResource(resource types.Resource) (cp types.Resource,
 
 			_, err = tx.TxPipelined(func(pipe redis.Pipeliner) error {
 				pipe.Incr(versionKey)
-				pipe.HSet(resource.PoolID, resource.ID, string(v))
+				pipe.HSet(poolHashKey(resource.PoolID), resource.ID, string(v))
 				return nil
 			})
 
@@ -170,7 +170,7 @@ func (p *ResourcePool) SaveResource(resource types.Resource) (cp types.Resource,
 
 func (p *ResourcePool) DeleteResource(resource types.Resource) error {
 	_, err := p.client.TxPipelined(func(pipe redis.Pipeliner) error {
-		pipe.HDel(resource.PoolID, resource.ID)
+		pipe.HDel(poolHashKey(resource.PoolID), resource.ID)
 		pipe.Del(clientHashKey(resource))
 		pipe.Del(resourceVersionKey(resource))
 		return nil
@@ -276,6 +276,10 @@ func (p *ResourcePool) GetEventsByResource(poolID, id string, limit int, before 
 		}
 	}
 	return
+}
+
+func poolHashKey(pool string) string {
+	return pool + ":pool"
 }
 
 func clientHashKey(resource types.Resource) string {
