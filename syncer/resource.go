@@ -128,10 +128,10 @@ func (s *ResourceSyncer) Run(ctx context.Context, workers int) error {
 				for _, c := range res.Clients {
 					metrics.RecordClientLife(res.PoolID, c.ID, c.Heartbeat.Sub(c.CreatedAt))
 					if rt, ok := c.Meta["requestAt"]; ok {
-						rt := rt.(time.Time)
+						rt := toTime(rt)
 						ut := time.Now()
 						if st, ok := c.Meta["servedAt"]; ok {
-							ut = st.(time.Time)
+							ut = toTime(st)
 						}
 						metrics.RecordClientWait(res.PoolID, c.ID, rt.Sub(ut))
 					}
@@ -155,4 +155,16 @@ func stateCounter() map[string]int64 {
 		counter[s.String()] = 0
 	}
 	return counter
+}
+
+func toTime(t interface{}) time.Time {
+	switch v := t.(type) {
+	case time.Time:
+		return v
+	case string:
+		ts, _ := time.Parse(time.RFC3339, v)
+		return ts
+	}
+
+	return time.Time{}
 }
