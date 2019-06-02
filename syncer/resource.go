@@ -123,9 +123,11 @@ func (s *ResourceSyncer) Run(ctx context.Context, workers int) error {
 			clients := 0
 			for _, res := range pool.Resources {
 				sc[res.State.String()]++
-				clients += len(res.Clients)
 				metrics.RecordResourceLife(res.PoolID, res.State.String(), res.ID, time.Since(res.StateChange))
 				for _, c := range res.Clients {
+					if time.Since(c.Heartbeat) < 1*time.Minute {
+						clients++
+					}
 					metrics.RecordClientLife(res.PoolID, c.ID, c.Heartbeat.Sub(c.CreatedAt))
 					if rt, ok := c.Meta["requestAt"]; ok {
 						rt := toTime(rt)
@@ -133,7 +135,7 @@ func (s *ResourceSyncer) Run(ctx context.Context, workers int) error {
 						if st, ok := c.Meta["servedAt"]; ok {
 							ut = toTime(st)
 						}
-						metrics.RecordClientWait(res.PoolID, c.ID, rt.Sub(ut))
+						metrics.RecordClientWait(res.PoolID, c.ID, ut.Sub(rt))
 					}
 				}
 			}
