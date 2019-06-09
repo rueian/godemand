@@ -127,15 +127,15 @@ func (s *ResourceSyncer) Run(ctx context.Context, workers int) error {
 				for _, c := range res.Clients {
 					if time.Since(c.Heartbeat) < 1*time.Minute {
 						clients++
-					}
-					metrics.RecordClientLife(res.PoolID, c.ID, c.Heartbeat.Sub(c.CreatedAt))
-					if rt, ok := c.Meta["requestAt"]; ok {
-						rt := toTime(rt)
-						ut := time.Now()
-						if st, ok := c.Meta["servedAt"]; ok {
-							ut = toTime(st)
+						metrics.RecordClientLife(res.PoolID, c.ID, c.Heartbeat.Sub(c.CreatedAt))
+						if rt, ok := c.Meta["requestAt"]; ok {
+							rt := toTime(rt)
+							ut := time.Now()
+							if st, ok := c.Meta["servedAt"]; ok {
+								ut = toTime(st)
+							}
+							metrics.RecordClientWait(res.PoolID, c.ID, ut.Sub(rt))
 						}
-						metrics.RecordClientWait(res.PoolID, c.ID, ut.Sub(rt))
 					}
 				}
 			}
