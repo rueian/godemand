@@ -73,7 +73,7 @@ func StartRecording(period time.Duration, es ...view.Exporter) error {
 			return err
 		}
 		// since we trace each resource and client, it is necessary unregistering views periodically to avoid memory leak.
-		time.Sleep(time.Hour)
+		time.Sleep(period * 3)
 		view.Unregister(ResourceCountView, ResourceLifeView, ClientCountView, ClientLifeView, ClientWaitView)
 	}
 }
