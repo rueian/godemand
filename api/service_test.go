@@ -2,8 +2,6 @@ package api
 
 import (
 	"errors"
-	"time"
-
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -12,7 +10,7 @@ import (
 	"github.com/rueian/godemand/resource"
 	"github.com/rueian/godemand/types"
 	"github.com/rueian/godemand/types/mock"
-	"golang.org/x/xerrors"
+	"time"
 )
 
 var _ = Describe("Service", func() {
@@ -93,7 +91,7 @@ var _ = Describe("Service", func() {
 				lockErr = plugin.AcquireLaterErr
 			})
 			It("get err", func() {
-				Expect(xerrors.Is(err, plugin.AcquireLaterErr)).To(BeTrue())
+				Expect(errors.Is(err, plugin.AcquireLaterErr)).To(BeTrue())
 			})
 		})
 
@@ -103,7 +101,7 @@ var _ = Describe("Service", func() {
 			})
 
 			It("get err", func() {
-				Expect(xerrors.Is(err, config.PoolConfigNotFoundErr)).To(BeTrue())
+				Expect(errors.Is(err, config.PoolConfigNotFoundErr)).To(BeTrue())
 			})
 		})
 
@@ -114,7 +112,7 @@ var _ = Describe("Service", func() {
 			})
 
 			It("get err", func() {
-				Expect(xerrors.Is(err, plugin.ControllerNotFoundErr)).To(BeTrue())
+				Expect(errors.Is(err, plugin.ControllerNotFoundErr)).To(BeTrue())
 			})
 		})
 
@@ -204,7 +202,7 @@ var _ = Describe("Service", func() {
 
 		Context("not found", func() {
 			It("got err", func() {
-				Expect(xerrors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
+				Expect(errors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
 			})
 		})
 	})
@@ -226,7 +224,7 @@ var _ = Describe("Service", func() {
 				resID = "b"
 			})
 			It("get err", func() {
-				Expect(xerrors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
+				Expect(errors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
 			})
 		})
 

@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
 var _ = Describe("InMemoryResourcePool", func() {
@@ -67,7 +67,7 @@ var _ = Describe("InMemoryResourcePool", func() {
 			Expect(pool.Resources).NotTo(HaveKey(res.ID))
 
 			_, err = store.GetResource(DefaultPool, res.ID)
-			Expect(xerrors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
+			Expect(errors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
 		})
 	})
 

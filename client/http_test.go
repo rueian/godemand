@@ -3,11 +3,6 @@ package client
 import (
 	"context"
 	"errors"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
-
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,7 +10,10 @@ import (
 	"github.com/rueian/godemand/plugin"
 	"github.com/rueian/godemand/types"
 	"github.com/rueian/godemand/types/mock"
-	"golang.org/x/xerrors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
 )
 
 var _ = Describe("Client", func() {
@@ -53,7 +51,7 @@ var _ = Describe("Client", func() {
 				ctx, _ = context.WithDeadline(context.Background(), time.Now())
 			})
 			It("err", func() {
-				Expect(xerrors.Is(err, context.DeadlineExceeded)).To(BeTrue())
+				Expect(errors.Is(err, context.DeadlineExceeded)).To(BeTrue())
 			})
 		})
 
@@ -76,7 +74,7 @@ var _ = Describe("Client", func() {
 
 		Context("api lock retry", func() {
 			BeforeEach(func() {
-				ctx, _ = context.WithTimeout(context.Background(), 2*time.Second)
+				ctx, _ = context.WithTimeout(context.Background(), 1500*time.Millisecond)
 				service.EXPECT().RequestResource(poolID, info).Return(types.Resource{}, plugin.AcquireLaterErr).Times(2)
 			})
 			It("err", func() {

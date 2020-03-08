@@ -1,14 +1,15 @@
 package plugin
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 	"sync"
 
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
-var ControllerNotFoundErr = xerrors.New("Controller not found in launchpad")
+var ControllerNotFoundErr = errors.New("controller not found in launchpad")
 
 type Errors struct {
 	errs []error
@@ -91,7 +92,7 @@ func (p *Launchpad) GetController(name string) (controller types.Controller, err
 	if l, ok := p.launchers[name]; ok {
 		return l.Controller, nil
 	}
-	return nil, xerrors.Errorf("fail to get controller %q: %w", name, ControllerNotFoundErr)
+	return nil, fmt.Errorf("fail to get controller %q: %w", name, ControllerNotFoundErr)
 }
 
 func (p *Launchpad) Close() {

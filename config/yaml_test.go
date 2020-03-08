@@ -5,10 +5,10 @@ import (
 	"os"
 	"testing"
 
+	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -85,7 +85,7 @@ pools:
 					id = "random"
 				})
 				It("not found", func() {
-					Expect(xerrors.Is(err, PoolConfigNotFoundErr)).To(BeTrue())
+					Expect(errors.Is(err, PoolConfigNotFoundErr)).To(BeTrue())
 				})
 			})
 		})

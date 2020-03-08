@@ -1,9 +1,8 @@
 package types
 
 import (
+	"errors"
 	"time"
-
-	"golang.org/x/xerrors"
 )
 
 type ResourceState int
@@ -101,4 +100,4 @@ type ResourceDAO interface {
 	GetEventsByResource(poolID, id string, limit int, before time.Time) ([]ResourceEvent, error)
 }
 
-var ResourceNotFoundErr = xerrors.New("resource not found in pool")
+var ResourceNotFoundErr = errors.New("resource not found in pool")

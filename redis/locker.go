@@ -1,13 +1,13 @@
 package redis
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/rueian/godemand/plugin"
-	"golang.org/x/xerrors"
 )
 
 type LockerOptionFunc func(*Locker)
@@ -43,7 +43,7 @@ func (l *Locker) AcquireLock(key string) (id string, err error) {
 		return "", err
 	}
 	if !ok {
-		return "", xerrors.Errorf("fail to acquire lock on %s: %w", key, plugin.AcquireLaterErr)
+		return "", fmt.Errorf("fail to acquire lock on %s: %w", key, plugin.AcquireLaterErr)
 	}
 	return id, nil
 }
@@ -54,7 +54,7 @@ func (l *Locker) ReleaseLock(key, id string) error {
 		return err
 	}
 	if removed.(int64) == 0 {
-		return xerrors.Errorf("fail to release lock by (%s, %s): %w", key, id, plugin.LockNotFoundErr)
+		return fmt.Errorf("fail to release lock by (%s, %s): %w", key, id, plugin.LockNotFoundErr)
 	}
 	return nil
 }

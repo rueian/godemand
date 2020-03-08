@@ -1,15 +1,16 @@
 package config
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 	"gopkg.in/yaml.v2"
 )
 
-var PoolConfigNotFoundErr = xerrors.New("pool not found in config")
+var PoolConfigNotFoundErr = errors.New("pool not found in config")
 
 type Config struct {
 	Plugins map[string]PluginConfig `yaml:"plugins"`
@@ -42,7 +43,7 @@ func (c *Config) GetPool(poolID string) (pool PoolConfig, err error) {
 	if pool, ok := c.Pools[poolID]; ok {
 		return pool, nil
 	}
-	return PoolConfig{}, xerrors.Errorf("fail to get pool config %q: %w", poolID, PoolConfigNotFoundErr)
+	return PoolConfig{}, fmt.Errorf("fail to get pool config %q: %w", poolID, PoolConfigNotFoundErr)
 }
 
 func LoadConfig(path string) (c *Config, err error) {

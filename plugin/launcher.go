@@ -3,6 +3,8 @@ package plugin
 import (
 	"bufio"
 	"context"
+	"errors"
+	"fmt"
 	"log"
 	"net/rpc"
 	"os"
@@ -12,7 +14,6 @@ import (
 	"time"
 
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
 const CurrentProtocolVersion = 1
@@ -21,9 +22,9 @@ const RPCServerName = "Controller"
 var MinimumProtocolVersion = 1
 
 var (
-	ProtocolVersionTooOldErr = xerrors.New("plugin's protocol version is too old")
-	LaunchTimeoutErr         = xerrors.New("plugin doesn't print its port in time")
-	MalformedLaunchSignError = xerrors.New("plugin prints a malformed sign")
+	ProtocolVersionTooOldErr = errors.New("plugin's protocol version is too old")
+	LaunchTimeoutErr         = errors.New("plugin doesn't print its port in time")
+	MalformedLaunchSignError = errors.New("plugin prints a malformed sign")
 )
 
 func NewLauncher(param types.CmdParam, logger *log.Logger) *Launcher {
@@ -102,17 +103,17 @@ func (l *Launcher) Launch() (types.Controller, error) {
 		s := strings.Split(sign, "|")
 		if len(s) != 4 {
 			cancel()
-			return nil, xerrors.Errorf("fail to parse sign %q: %w", sign, MalformedLaunchSignError)
+			return nil, fmt.Errorf("fail to parse sign %q: %w", sign, MalformedLaunchSignError)
 		}
 		version, network, address = s[1], s[2], s[3]
 	case <-time.Tick(30 * time.Second):
 		cancel()
-		return nil, xerrors.Errorf("fail to connect plugin in 30 sec: %w", LaunchTimeoutErr)
+		return nil, fmt.Errorf("fail to connect plugin in 30 sec: %w", LaunchTimeoutErr)
 	}
 
 	if v, err := strconv.Atoi(version); err != nil || v < MinimumProtocolVersion {
 		cancel()
-		return nil, xerrors.Errorf("fail to load the plugin %s: %w", l.CmdParam.Name, ProtocolVersionTooOldErr)
+		return nil, fmt.Errorf("fail to load the plugin %s: %w", l.CmdParam.Name, ProtocolVersionTooOldErr)
 	}
 
 	l.client, err = rpc.Dial(network, address)

@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
+	"errors"
 	"github.com/go-redis/redis"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
 var _ = Describe("ResourcePool", func() {
@@ -94,7 +94,7 @@ var _ = Describe("ResourcePool", func() {
 				delete(source.Resources, d)
 
 				_, err := dao.GetResource(id, d)
-				Expect(xerrors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
+				Expect(errors.Is(err, types.ResourceNotFoundErr)).To(BeTrue())
 			}
 
 			pool, err = dao.GetResources(id)

@@ -3,6 +3,8 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -10,7 +12,6 @@ import (
 	"time"
 
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
 func NewHTTPClient(host string, info types.Client, client *http.Client) *HTTPClient {
@@ -29,7 +30,7 @@ type HTTPClient struct {
 	servedAt  time.Time
 }
 
-var NotFoundError = xerrors.New("http status 404")
+var NotFoundError = errors.New("http status 404")
 
 func (c *HTTPClient) RequestResource(ctx context.Context, poolID string) (resource types.Resource, err error) {
 	c.requestAt = time.Now()
@@ -50,7 +51,7 @@ func (c *HTTPClient) RequestResource(ctx context.Context, poolID string) (resour
 				time.Sleep(5 * time.Second)
 			}
 			res, err = c.postRetry(ctx, "/GetResource", makeForm(resource.PoolID, resource.ID, c.info))
-			if xerrors.Is(err, NotFoundError) {
+			if errors.Is(err, NotFoundError) {
 				break
 			}
 			if err != nil {
@@ -80,7 +81,7 @@ func (c *HTTPClient) postRetry(ctx context.Context, endpoint string, form url.Va
 	for {
 		select {
 		case <-ctx.Done():
-			return nil, xerrors.Errorf("errors: %s: %w", strings.Join(msg, "|"), ctx.Err())
+			return nil, fmt.Errorf("errors: %s: %w", strings.Join(msg, "|"), ctx.Err())
 		default:
 		}
 
@@ -97,7 +98,7 @@ func (c *HTTPClient) postRetry(ctx context.Context, endpoint string, form url.Va
 				return res, nil
 			}
 			if resp.StatusCode == 404 {
-				return nil, xerrors.Errorf("%s: %w", string(res), NotFoundError)
+				return nil, fmt.Errorf("%s: %w", string(res), NotFoundError)
 			}
 		}
 		if len(res) > 0 {

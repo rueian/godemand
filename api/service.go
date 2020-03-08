@@ -1,11 +1,11 @@
 package api
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/rueian/godemand/config"
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
 type Service struct {
@@ -85,13 +85,13 @@ func (s *Service) GetResource(poolID, id string) (res types.Resource, err error)
 		return res, nil
 	}
 
-	return types.Resource{}, xerrors.Errorf("resource %q not found in pool %q: %w", id, poolID, types.ResourceNotFoundErr)
+	return types.Resource{}, fmt.Errorf("resource %q not found in pool %q: %w", id, poolID, types.ResourceNotFoundErr)
 }
 
 func (s *Service) Heartbeat(poolID, id string, client types.Client) (err error) {
 	res, err := s.Pool.GetResource(poolID, id)
 	if err != nil {
-		return xerrors.Errorf("resource %q not found in pool %q: %w", id, poolID, types.ResourceNotFoundErr)
+		return fmt.Errorf("resource %q not found in pool %q: %w", id, poolID, types.ResourceNotFoundErr)
 	}
 
 	now := time.Now()

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"errors"
 	"github.com/rueian/godemand/plugin"
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
 func NewHTTPMux(s types.Service) *http.ServeMux {
@@ -85,9 +85,9 @@ func handleClient(w http.ResponseWriter, input string) (client types.Client, ok 
 }
 
 func handleErr(w http.ResponseWriter, err error) bool {
-	if xerrors.Is(err, plugin.AcquireLaterErr) {
+	if errors.Is(err, plugin.AcquireLaterErr) {
 		w.WriteHeader(429)
-	} else if xerrors.Is(err, types.ResourceNotFoundErr) {
+	} else if errors.Is(err, types.ResourceNotFoundErr) {
 		w.WriteHeader(404)
 	} else if err != nil {
 		w.WriteHeader(500)

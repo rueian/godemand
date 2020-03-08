@@ -3,14 +3,13 @@ package plugin
 import (
 	"bufio"
 	"bytes"
-	"log"
-	"strings"
-	"syscall"
-
+	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
+	"log"
+	"strings"
+	"syscall"
 )
 
 var _ = Describe("PluginLauncher", func() {
@@ -74,7 +73,7 @@ var _ = Describe("PluginLauncher", func() {
 			MinimumProtocolVersion = 1 // change it back
 		})
 		It("reject with err", func() {
-			Expect(xerrors.Is(err, ProtocolVersionTooOldErr)).To(BeTrue())
+			Expect(errors.Is(err, ProtocolVersionTooOldErr)).To(BeTrue())
 		})
 	})
 

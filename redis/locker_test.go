@@ -3,11 +3,11 @@ package redis
 import (
 	"time"
 
+	"errors"
 	"github.com/go-redis/redis"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/plugin"
-	"golang.org/x/xerrors"
 )
 
 var _ = Describe("Locker", func() {
@@ -34,7 +34,7 @@ var _ = Describe("Locker", func() {
 
 		It("get AcquireLaterErr if others acquired", func() {
 			id, err = locker.AcquireLock(key)
-			Expect(xerrors.Is(err, plugin.AcquireLaterErr)).To(BeTrue())
+			Expect(errors.Is(err, plugin.AcquireLaterErr)).To(BeTrue())
 			Expect(id).To(BeEmpty())
 		})
 	})
@@ -58,7 +58,7 @@ var _ = Describe("Locker", func() {
 				key = "other"
 			})
 			It("get LockNotFoundErr", func() {
-				Expect(xerrors.Is(err, plugin.LockNotFoundErr)).To(BeTrue())
+				Expect(errors.Is(err, plugin.LockNotFoundErr)).To(BeTrue())
 			})
 		})
 		Context("id mismatch", func() {
@@ -66,7 +66,7 @@ var _ = Describe("Locker", func() {
 				id = "other"
 			})
 			It("get LockNotFoundErr", func() {
-				Expect(xerrors.Is(err, plugin.LockNotFoundErr)).To(BeTrue())
+				Expect(errors.Is(err, plugin.LockNotFoundErr)).To(BeTrue())
 			})
 		})
 	})

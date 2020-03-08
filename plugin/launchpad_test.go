@@ -1,12 +1,12 @@
 package plugin
 
 import (
+	"errors"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/rueian/godemand/types"
-	"golang.org/x/xerrors"
 )
 
 var _ = Describe("LaunchPad", func() {
@@ -114,7 +114,7 @@ var _ = Describe("LaunchPad", func() {
 		})
 		It("get ControllerNotFoundErr if not launched", func() {
 			_, err := launchpad.GetController("random")
-			Expect(xerrors.Is(err, ControllerNotFoundErr)).To(BeTrue())
+			Expect(errors.Is(err, ControllerNotFoundErr)).To(BeTrue())
 		})
 	})
 

@@ -1,9 +1,9 @@
 package plugin
 
 import (
+	"errors"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"golang.org/x/xerrors"
 )
 
 var _ = Describe("InMemoryLocker", func() {
@@ -25,7 +25,7 @@ var _ = Describe("InMemoryLocker", func() {
 
 		It("get AcquireLaterErr if others acquired", func() {
 			id, err = locker.AcquireLock(key)
-			Expect(xerrors.Is(err, AcquireLaterErr)).To(BeTrue())
+			Expect(errors.Is(err, AcquireLaterErr)).To(BeTrue())
 			Expect(id).To(BeEmpty())
 		})
 	})
@@ -49,7 +49,7 @@ var _ = Describe("InMemoryLocker", func() {
 				key = "other"
 			})
 			It("get LockNotFoundErr", func() {
-				Expect(xerrors.Is(err, LockNotFoundErr)).To(BeTrue())
+				Expect(errors.Is(err, LockNotFoundErr)).To(BeTrue())
 			})
 		})
 		Context("id mismatch", func() {
@@ -57,7 +57,7 @@ var _ = Describe("InMemoryLocker", func() {
 				id = "other"
 			})
 			It("get LockNotFoundErr", func() {
-				Expect(xerrors.Is(err, LockNotFoundErr)).To(BeTrue())
+				Expect(errors.Is(err, LockNotFoundErr)).To(BeTrue())
 			})
 		})
 	})
