@@ -3,6 +3,11 @@ package client
 import (
 	"context"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -10,10 +15,6 @@ import (
 	"github.com/rueian/godemand/plugin"
 	"github.com/rueian/godemand/types"
 	"github.com/rueian/godemand/types/mock"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
 )
 
 var _ = Describe("Client", func() {
@@ -26,7 +27,7 @@ var _ = Describe("Client", func() {
 	var res types.Resource
 	var ctx context.Context
 	var poolID = "pool1"
-	var info = types.Client{}
+	var info = types.Client{ID: "fake"}
 
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
@@ -137,6 +138,12 @@ var _ = Describe("Client", func() {
 			It("success", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
+		})
+	})
+
+	Describe("Info", func() {
+		It("success", func() {
+			Expect(client.Info()).To(Equal(info))
 		})
 	})
 })

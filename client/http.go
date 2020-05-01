@@ -32,6 +32,10 @@ type HTTPClient struct {
 
 var NotFoundError = errors.New("http status 404")
 
+func (c *HTTPClient) Info() types.Client {
+	return c.info
+}
+
 func (c *HTTPClient) RequestResource(ctx context.Context, poolID string) (resource types.Resource, err error) {
 	c.requestAt = time.Now()
 	for {
