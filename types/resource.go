@@ -80,10 +80,11 @@ type ResourceEvent struct {
 }
 
 type Client struct {
-	ID        string
-	CreatedAt time.Time
-	Heartbeat time.Time
-	Meta      Meta
+	ID         string
+	CreatedAt  time.Time
+	Heartbeat  time.Time
+	Meta       Meta
+	PoolConfig Meta
 }
 
 type Meta map[string]interface{}

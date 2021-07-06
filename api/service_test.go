@@ -48,6 +48,9 @@ var _ = Describe("Service", func() {
 			Meta: types.Meta{
 				"ip": "0.0.0.0",
 			},
+			PoolConfig: types.Meta{
+				"b": "b",
+			},
 		}
 	})
 
@@ -130,7 +133,7 @@ var _ = Describe("Service", func() {
 
 			Context("err from controller", func() {
 				BeforeEach(func() {
-					controller.EXPECT().FindResource(p, pcfg.Params).Return(types.Resource{}, errors.New("any"))
+					controller.EXPECT().FindResource(p, merge(pcfg.Params, client.PoolConfig)).Return(types.Resource{}, errors.New("any"))
 				})
 				It("got err", func() {
 					Expect(err).To(Equal(errors.New("any")))
@@ -139,7 +142,7 @@ var _ = Describe("Service", func() {
 
 			Context("one of resources from controller", func() {
 				BeforeEach(func() {
-					controller.EXPECT().FindResource(p, pcfg.Params).Return(types.Resource{ID: "a", PoolID: poolID}, nil)
+					controller.EXPECT().FindResource(p, merge(pcfg.Params, client.PoolConfig)).Return(types.Resource{ID: "a", PoolID: poolID}, nil)
 				})
 				It("got no err", func() {
 					Expect(err).NotTo(HaveOccurred())
@@ -160,7 +163,7 @@ var _ = Describe("Service", func() {
 
 			Context("new resources from controller", func() {
 				BeforeEach(func() {
-					controller.EXPECT().FindResource(p, pcfg.Params).Return(types.Resource{ID: "b", PoolID: poolID}, nil)
+					controller.EXPECT().FindResource(p, merge(pcfg.Params, client.PoolConfig)).Return(types.Resource{ID: "b", PoolID: poolID}, nil)
 				})
 				It("got no err", func() {
 					Expect(err).NotTo(HaveOccurred())
