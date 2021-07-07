@@ -52,6 +52,7 @@ var _ = Describe("Syncer", func() {
 			ID:     "a",
 			PoolID: "pool1",
 			Meta:   map[string]interface{}{},
+			Config: map[string]interface{}{"b": "b"},
 			Clients: map[string]types.Client{
 				"client1": {
 					ID: "client1",
@@ -103,7 +104,7 @@ var _ = Describe("Syncer", func() {
 				launchpad.EXPECT().GetController("plugin1").Return(controller, nil)
 				locker.EXPECT().AcquireLock(res.ID).Return("lockID", nil)
 				locker.EXPECT().ReleaseLock(res.ID, "lockID").Return(nil)
-				controller.EXPECT().SyncResource(gomock.Any(), cfg.Pools["pool1"].Params).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
+				controller.EXPECT().SyncResource(gomock.Any(), types.Merge(cfg.Pools["pool1"].Params, res.Config)).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
 					bs, _ := json.Marshal(res)
 					if resSnapshot != string(bs) {
 						return types.Resource{}, errors.New("input not match")
@@ -125,14 +126,14 @@ var _ = Describe("Syncer", func() {
 				locker.EXPECT().ReleaseLock(res.ID, "lockID").Return(nil)
 				alter = res
 				alter.State = types.ResourceServing
-				controller.EXPECT().SyncResource(gomock.Any(), cfg.Pools["pool1"].Params).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
+				controller.EXPECT().SyncResource(gomock.Any(), types.Merge(cfg.Pools["pool1"].Params, res.Config)).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
 					if res.State != alter.State || res.StateChange.IsZero() {
 						return types.Resource{}, errors.New("input not match")
 					}
 					cancel()
 					return res, nil
 				}).After(
-					controller.EXPECT().SyncResource(gomock.Any(), cfg.Pools["pool1"].Params).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
+					controller.EXPECT().SyncResource(gomock.Any(), types.Merge(cfg.Pools["pool1"].Params, res.Config)).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
 						bs, _ := json.Marshal(res)
 						if resSnapshot != string(bs) {
 							return types.Resource{}, errors.New("input not match")
@@ -158,7 +159,7 @@ var _ = Describe("Syncer", func() {
 				locker.EXPECT().ReleaseLock(res.ID, "lockID").Return(nil)
 				res2 := res
 				res2.State = types.ResourceDeleted
-				controller.EXPECT().SyncResource(gomock.Any(), cfg.Pools["pool1"].Params).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
+				controller.EXPECT().SyncResource(gomock.Any(), types.Merge(cfg.Pools["pool1"].Params, res.Config)).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
 					bs, _ := json.Marshal(res)
 					if resSnapshot != string(bs) {
 						return types.Resource{}, errors.New("input not match")
@@ -180,7 +181,7 @@ var _ = Describe("Syncer", func() {
 				launchpad.EXPECT().GetController("plugin1").Return(controller, nil)
 				locker.EXPECT().AcquireLock(res.ID).Return("lockID", nil)
 				locker.EXPECT().ReleaseLock(res.ID, "lockID").Return(nil)
-				controller.EXPECT().SyncResource(gomock.Any(), cfg.Pools["pool1"].Params).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
+				controller.EXPECT().SyncResource(gomock.Any(), types.Merge(cfg.Pools["pool1"].Params, res.Config)).DoAndReturn(func(res types.Resource, params map[string]interface{}) (types.Resource, error) {
 					bs, _ := json.Marshal(res)
 					if resSnapshot != string(bs) {
 						return types.Resource{}, errors.New("input not match")

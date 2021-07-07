@@ -44,7 +44,7 @@ func (s *ResourceSyncer) Run(ctx context.Context, workers int) error {
 
 				var ret types.Resource
 				for {
-					ret, err = controller.SyncResource(res, config.Params)
+					ret, err = controller.SyncResource(res, types.Merge(config.Params, res.Config))
 					if err != nil {
 						break
 					}

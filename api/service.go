@@ -37,10 +37,11 @@ func (s *Service) RequestResource(poolID string, client types.Client) (res types
 		return types.Resource{}, err
 	}
 
-	res, err = controller.FindResource(pool, merge(poolConfig.Params, client.PoolConfig))
+	res, err = controller.FindResource(pool, types.Merge(poolConfig.Params, client.PoolConfig))
 	if err != nil {
 		return types.Resource{}, err
 	}
+	res.Config = client.PoolConfig
 
 	event := types.ResourceEvent{
 		ResourceID:     res.ID,
@@ -107,15 +108,4 @@ func (s *Service) Heartbeat(poolID, id string, client types.Client) (err error) 
 	}
 
 	return nil
-}
-
-func merge(a, b map[string]interface{}) map[string]interface{} {
-	out := make(map[string]interface{})
-	for k, v := range a {
-		out[k] = v
-	}
-	for k, v := range b {
-		out[k] = v
-	}
-	return out
 }

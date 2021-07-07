@@ -64,6 +64,7 @@ type Resource struct {
 	ID                  string
 	PoolID              string
 	Meta                Meta
+	Config              Meta
 	State               ResourceState
 	StateChange         time.Time
 	CreatedAt           time.Time
@@ -102,3 +103,14 @@ type ResourceDAO interface {
 }
 
 var ResourceNotFoundErr = errors.New("resource not found in pool")
+
+func Merge(a, b map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{})
+	for k, v := range a {
+		out[k] = v
+	}
+	for k, v := range b {
+		out[k] = v
+	}
+	return out
+}
