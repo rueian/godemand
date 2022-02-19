@@ -15,7 +15,7 @@ And Godemand reads the config file and exposes resource controller's `FindResour
 
 It is the responsibility of `FindResource` to create a new resource record or pick a existing one remembered by Godemand.
 
-Godemand will remember all resource records created by the controller and call the its `SyncResource` method periodically.
+Godemand will remember all resource records created by the controller and call controller's `SyncResource` method periodically.
 
 It is the responsibility of `SyncResource` to manage the real status of the resource.
 
